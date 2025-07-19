@@ -1,4 +1,4 @@
-import RestController, { type RestControllerOptions } from "./rest-controller";
+import RestController, { type RestControllerOptions } from "./controller";
 
 export { RestController };
 export type { RestControllerOptions };
