@@ -1,4 +1,6 @@
 # compiled output
+/tmp
+/tmp0
 /dist
 /node_modules
 /build
