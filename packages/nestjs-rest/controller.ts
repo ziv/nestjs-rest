@@ -48,12 +48,20 @@ export default class RestController {
    * @param filter
    */
   @Post(":resource/search")
-  async searchRecords(
+  searchRecords(
     @Param("resource") resource: string,
     @Query() query: Partial<QuerySchema>,
     @Body() filter: RestFilter,
   ): Promise<Items> {
     return this.#find(resource, query, filter);
+  }
+
+  @Get(":resource")
+  getMultipleRecords(
+    @Param("resource") resource: string,
+    @Query() query: Partial<QuerySchema>,
+  ): Promise<Items> {
+    return this.#find(resource, query);
   }
 
   /**
@@ -74,14 +82,6 @@ export default class RestController {
     return {
       data: item,
     };
-  }
-
-  @Get(":resource")
-  async getMultipleRecords(
-    @Param("resource") resource: string,
-    @Query() query: Partial<QuerySchema>,
-  ): Promise<Items> {
-    return this.#find(resource, query);
   }
 
   @Post(":resource")

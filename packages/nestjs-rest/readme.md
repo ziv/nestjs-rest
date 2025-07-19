@@ -13,21 +13,20 @@ npm i nestjs-rest
 Extend the `RestController` class to create a REST controller:
 
 ```typescript
-import {Controller, Inject} from "@nestjs/common";
+import { Controller, Inject } from "@nestjs/common";
 import RestController from "nestjs-rest/controller";
 import type RestAdapter from "nestjs-rest/adapter";
 
 @Controller("...")
 class UserController extends RestController {
-    // make sure to provide the required adapters
-    constructor(@Inject("ListOfAdapters") adapters: RestAdapter[]) {
-        // pass the adapters to the RestController
-        super({adapters});
-    }
+  // make sure to provide the required adapters
+  constructor(@Inject("ListOfAdapters") adapters: RestAdapter[]) {
+    // pass the adapters to the RestController
+    super({ adapters });
+  }
 }
 ```
 
 ## Adapters
 
 ...
-
