@@ -54,6 +54,10 @@ export type MongodbAdapterOptions<T extends Document> = {
 
 export default class MongodbAdapter<T extends Document>
   implements RestAdapter<T, Filter<T>> {
+  /**
+   *
+   * @param options
+   */
   constructor(readonly options: MongodbAdapterOptions<T>) {
   }
 
