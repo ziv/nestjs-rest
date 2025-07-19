@@ -1,0 +1,19 @@
+{
+  "name": "nestjs-rest-utilities",
+  "description": "Nest.JS rest utilities",
+  "author": "Ziv Perry",
+  "license": "MIT",
+  "workspaces": [
+    "packages/nestjs-rest",
+    "packages/nestjs-rest-mongodb"
+  ],
+  "scripts": {
+    "build": "npm run build -w packages/nestjs-rest",
+    "lint": "deno fmt && deno lint",
+    "predocs": "npm run docs --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "^22.0.2",
+    "typedoc": "^0.28.7"
+  }
+}

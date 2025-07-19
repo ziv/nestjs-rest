@@ -1,0 +1,42 @@
+name: release nestjs-slack-assistant ci
+
+on:
+  workflow_dispatch:
+#  push:
+#    branches:
+#      - main
+permissions:
+  #  contents: read # for checkout
+  contents: write # to be able to publish a GitHub release
+  issues: write # to be able to comment on released issues
+  pull-requests: write # to be able to comment on released pull requests
+  id-token: write # to enable use of OIDC for npm provenance (npm and jsr)
+jobs:
+  prepare:
+    name: Prepare release
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⛵️ checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ☂️ setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 🔑 dependencies
+        run: npm ci
+
+      - name: 🍓 verify
+        run: npm audit signatures
+
+      - name: 🌈 build
+        run: npm run build
+
+      - name: 🦋release nestjs-rest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_PUBLISH }}
+        run: cd packages/nestjs-rest && npx semantic-release
