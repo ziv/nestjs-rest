@@ -8,7 +8,7 @@
     "packages/nestjs-rest-mongodb"
   ],
   "scripts": {
-    "build": "npm run build -w packages/nestjs-rest",
+    "build": "npm run build -w packages/nestjs-rest && npm run build -w packages/nestjs-rest-mongodb",
     "lint": "deno fmt && deno lint",
     "predocs": "npm run docs --workspaces --if-present"
   },

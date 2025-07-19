@@ -1,0 +1,65 @@
+{
+  "name": "nestjs-rest-mongodb",
+  "version": "0.0.0",
+  "description": "Mongodb adapter for NestJS REST",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig-lib.json"
+  },
+  "author": "Ziv Perry",
+  "license": "MIT",
+  "keywords": [
+    "nestjs",
+    "rest",
+    "crud",
+    "resource",
+    "controller",
+    "api",
+    "mongodb",
+    "mongo",
+    "adapter"
+  ],
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ziv/nestjs-rest.git",
+    "directory": "packages/nestjs-rest-mongodb"
+  },
+  "bugs": {
+    "url": "https://github.com/ziv/nestjs-rest/issues"
+  },
+  "homepage": "https://github.com/ziv/nestjs-rest#readme",
+  "files": [
+    "*.js",
+    "*.d.ts",
+    "readme.md",
+    "license"
+  ],
+  "release": {
+    "extends": "semantic-release-monorepo",
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/npm",
+      "@semantic-release/github"
+    ]
+  },
+  "dependencies": {
+    "nestjs-rest": "*"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "^22.0.2",
+    "@types/node": "^24.0.15",
+    "mongodb": "^6.17.0",
+    "semantic-release": "^24.2.7",
+    "semantic-release-monorepo": "^8.0.2",
+    "zod": "^4.0.5"
+  },
+  "peerDependencies": {
+    "mongodb": "^6.17.0",
+    "zod": "^4.0.5"
+  }
+}
