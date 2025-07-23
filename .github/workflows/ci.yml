@@ -2,9 +2,9 @@ name: nestjs-rest release
 
 on:
   workflow_dispatch:
-#  push:
-#    branches:
-#      - main
+  push:
+    branches:
+      - main
 permissions:
   #  contents: read # for checkout
   contents: write # to be able to publish a GitHub release

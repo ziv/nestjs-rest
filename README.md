@@ -84,6 +84,6 @@ class UserController extends RestController {
 # TODO
 
 - [x] Add a MongoDB adapter.
+- [ ] Convert to be JSON:API compliant.
 - [ ] Add any SQL DB adapter.
 - [ ] Add Typeorm support.
-- [ ] Convert to be JSON:API compliant.
