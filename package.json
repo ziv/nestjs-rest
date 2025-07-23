@@ -9,12 +9,14 @@
   ],
   "scripts": {
     "build": "npm run build -w packages/nestjs-rest && npm run build -w packages/nestjs-rest-mongodb",
+    "test": "tsx --test",
     "lint": "deno fmt && deno lint",
     "predocs": "npm run docs --workspaces --if-present"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
     "cz-conventional-changelog": "^3.3.0",
+    "tsx": "^4.20.3",
     "typedoc": "^0.28.7"
   },
   "config": {
