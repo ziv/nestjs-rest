@@ -5,10 +5,11 @@
   "license": "MIT",
   "workspaces": [
     "packages/nestjs-rest",
-    "packages/nestjs-rest-mongodb"
+    "packages/nestjs-rest-mongodb",
+    "packages/std-json-api"
   ],
   "scripts": {
-    "build": "npm run build -w packages/nestjs-rest && npm run build -w packages/nestjs-rest-mongodb",
+    "build": "npm run build -w packages/nestjs-rest && npm run build -w packages/nestjs-rest-mongodb &&  npm run build -w packages/std-json-api",
     "test": "tsx --test",
     "lint": "deno fmt && deno lint",
     "predocs": "npm run docs --workspaces --if-present"
