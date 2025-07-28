@@ -10,7 +10,7 @@
     "packages/demo"
   ],
   "scripts": {
-    "build": "npm run build -w packages/nestjs-rest && npm run build -w packages/nestjs-rest-mongodb &&  npm run build -w packages/std-json-api",
+    "build": "npm run build -w packages/std-json-api && npm run build -w packages/nestjs-rest && npm run build -w packages/nestjs-rest-mongodb",
     "watch": "npm run build -w packages/std-json-api && npm run build -w packages/nestjs-rest",
     "test": "tsx --test",
     "lint": "deno fmt && deno lint",

@@ -4,7 +4,7 @@
   "description": "NestJS REST/CRUD utilities",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p tsconfig-lib.json --watch"
+    "build": "tsc -p tsconfig-lib.json"
   },
   "author": "Ziv Perry",
   "license": "MIT",

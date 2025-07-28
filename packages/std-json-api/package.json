@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "types.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig-lib.json --watch"
+    "build": "tsc -p tsconfig-lib.json"
   },
   "author": "Ziv Perry",
   "license": "MIT",
