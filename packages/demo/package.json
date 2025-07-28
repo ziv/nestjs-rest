@@ -1,0 +1,29 @@
+{
+  "name": "demo",
+  "version": "0.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig-app.json",
+    "start": "nest start --watch"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.7",
+    "@nestjs/common": "^11.1.5",
+    "@nestjs/core": "^11.1.5",
+    "@nestjs/platform-express": "^11.1.5",
+    "@nestjs/schematics": "^11.0.5",
+    "@swc/cli": "^0.7.8",
+    "@swc/core": "^1.13.2",
+    "@tsconfig/node22": "^22.0.2",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.15",
+    "globals": "^16.3.0",
+    "qs": "^6.14.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "source-map-support": "^0.5.21",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0"
+  }
+}

@@ -6,10 +6,12 @@
   "workspaces": [
     "packages/nestjs-rest",
     "packages/nestjs-rest-mongodb",
-    "packages/std-json-api"
+    "packages/std-json-api",
+    "packages/demo"
   ],
   "scripts": {
     "build": "npm run build -w packages/nestjs-rest && npm run build -w packages/nestjs-rest-mongodb &&  npm run build -w packages/std-json-api",
+    "watch": "npm run build -w packages/std-json-api && npm run build -w packages/nestjs-rest",
     "test": "tsx --test",
     "lint": "deno fmt && deno lint",
     "predocs": "npm run docs --workspaces --if-present"

@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "types.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig-lib.json"
+    "build": "tsc -p tsconfig-lib.json --watch"
   },
   "author": "Ziv Perry",
   "license": "MIT",
@@ -45,6 +45,7 @@
     ]
   },
   "devDependencies": {
+    "@nestjs/common": "^11.1.5",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^24.0.15",
     "semantic-release": "^24.2.7",

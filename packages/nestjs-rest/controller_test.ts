@@ -73,7 +73,7 @@ describe("methods", () => {
 
   for (const [method, expected, args] of methods) {
     it(`${method} should return the right data structure`, async () => {
-        // @ts-ignore: for testing purposes
+      // @ts-ignore: for testing purposes
       const res = await ctr[method as keyof RestController]("test", ...args);
       assert.deepEqual(expected, res);
     });

@@ -1,63 +1,24 @@
-import type { QuerySchema, RestFilter, RestModel } from "./primitives";
+import {RestAdapterFilter, RestAdapterPagination, RestAdapterSorting} from "std-json-api/json-api-query";
+import {AttributesObject, CollectionResourceDocument, SingleResourceDocument} from "std-json-api/json-api-types";
 
-/**
- * Generic interface for a REST adapter that provides methods for CRUD operations.
- */
-export type RestAdapter<
-  Model extends RestModel = RestModel,
-  Filter extends RestFilter = RestFilter,
-> = {
-  /**
-   * Returns the identifier for the adapter, typically the resource name.
-   * Represents the resource in the API URL.
-   */
-  id(): string;
-
-  /**
-   * Finds multiple items based on a query and pagination.
-   *
-   * @param filter
-   * @param query
-   */
-  multiple<R = Model>(
-    filter: Filter,
-    query: QuerySchema,
-  ): Promise<{ data: R[]; total: number }>;
-
-  /**
-   * Finds a single item by its primary identifier.
-   *
-   * @param id
-   */
-  single<R = Model>(id: string): Promise<R | null>;
-
-  /**
-   * Creates a new item.
-   *
-   * @param data
-   */
-  create(data: Model): Promise<string>;
-
-  /**
-   * Replaces an existing item by its identifier.
-   *
-   * @param id
-   * @param data
-   */
-  replace(id: string, data: Model): Promise<boolean>;
-
-  /**
-   * Updates an existing item by its identifier.
-   *
-   * @param id
-   * @param data
-   */
-  update(id: string, data: Partial<Model>): Promise<boolean>;
-
-  /**
-   * Deletes an item by its identifier.
-   *
-   * @param id
-   */
-  remove(id: string): Promise<boolean>;
+export type MultipleArgs<Pagination = RestAdapterPagination> = {
+    filter: RestAdapterFilter;
+    sort: RestAdapterSorting[];
+    page: Pagination; // todo make generic
 };
+
+export default interface JsonApiAdapter<
+    Model extends AttributesObject = AttributesObject,
+> {
+    multiple<R extends Model = Model>(input: MultipleArgs): Promise<CollectionResourceDocument<R>>;
+
+    single<R extends Model = Model>(
+        id: string,
+    ): Promise<SingleResourceDocument<R>>;
+
+    create<R = Model>(data: R): Promise<string>;
+
+    update<R = Model>(id: string, data: Partial<R>): Promise<string>;
+
+    remove(id: string): Promise<string>;
+}
