@@ -14,7 +14,8 @@
     "crud",
     "resource",
     "controller",
-    "api"
+    "api",
+    "jsonapi"
   ],
   "engines": {
     "node": ">=20.0.0",

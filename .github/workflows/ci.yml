@@ -41,11 +41,11 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH }}
         run: cd packages/nestjs-rest && npx semantic-release
 
-      - name: 🦋release nestjs-rest-mongodb
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_PUBLISH }}
-        run: cd packages/nestjs-rest-mongodb && npx semantic-release
+#      - name: 🦋release nestjs-rest-mongodb
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+#          NPM_TOKEN: ${{ secrets.NPM_PUBLISH }}
+#        run: cd packages/nestjs-rest-mongodb && npx semantic-release
 
       - name: 🦋release std-json-api
         env:
