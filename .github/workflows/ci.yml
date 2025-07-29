@@ -27,7 +27,7 @@ jobs:
           node-version: 22
 
       - name: 🔑 dependencies
-        run: npm ci
+        run: npm ci --no-fund
 
       - name: 🍓 verify
         run: npm audit signatures

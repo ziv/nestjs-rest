@@ -7,35 +7,44 @@ A [`JSON:API`](https://jsonapi.org/) compliant REST controller for
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
-## Overview
+# Overview
 
 This project bring the `JSON:API` specification to the `NestJS` framework,
 providing almost _zero-config_ REST controller that supports CRUD operations,
 sorting, pagination, filtering, and more.
 
-### Specification
+## Contents
+
+| Package Name                                            | Description                                                                               |
+|---------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| [`std-json-api`](./packages/std-json-api)               | Standard JSON:API implementation, providing the core functionality of document structure. |
+| [`std-json-api-client`](./packages/std-json-api-client) | Isomorphic HTTP/JSON:API client.                                                          |
+| [`nestjs-rest`](./packages/nestjs-rest)                 | NestJS controller that implements the JSON:API specification.                             |
+| [`nestjs-rest-mongodv`](./packages/nestjs-rest-mongodb) | Mongodb adapter for `nestjs-rest` package.                                                |
+
+## Specification
 
 `JSON:API/v1` specification is a standard for building APIs in JSON format
 ([reference](./packages/std-json-api/specs.md)).
 
-### Pagination Strategies
+## Pagination Strategies
 
 There are two pagination strategies supported by this project:
 
 | Pagination Strategy     | Status | Description                                                                                          |
-| ----------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
+|-------------------------|--------|------------------------------------------------------------------------------------------------------|
 | Offset-based pagination | ✈️     | Default pagination strategy using offset and limit query parameters.                                 |
 | Cursor-based pagination | 🚫     | Pagination strategy using cursor to provide a more efficient way to paginate through large datasets. |
 
 ### Implementation Report
 
 | Spec                | Subject    | Status | Reference                                       |
-| ------------------- | ---------- | ------ | ----------------------------------------------- |
+|---------------------|------------|--------|-------------------------------------------------|
 | content-negotiation |            | 🚫     | https://jsonapi.org/format/#content-negotiation |
 | document structure  |            | ✈️     | https://jsonapi.org/format/#document-structure  |
 | fetching data       |            | ✈️     | https://jsonapi.org/format/#fetching            |
 |                     | sorting    | ✈️     | https://jsonapi.org/format/#fetching-sorting    |
-|                     | pagination | ✈️     | https://jsonapi.org/format/#fetching-pagination |
+|                     | pagination | 🚧     | https://jsonapi.org/format/#fetching-pagination |
 |                     | filtering  | ✈️     | https://jsonapi.org/format/#fetching-filtering  |
 | crud                |            | ✈️     | https://jsonapi.org/format/#crud                |
 | query parameters    |            | ✈️     | https://jsonapi.org/format/#query-parameters    |
@@ -45,7 +54,7 @@ There are two pagination strategies supported by this project:
 ### Adapters Implementation Report
 
 | Adapter | Status | Description                                                    | Readme                                             |
-| ------- | ------ | -------------------------------------------------------------- | -------------------------------------------------- |
+|---------|--------|----------------------------------------------------------------|----------------------------------------------------|
 | Mongodb | ✈️     | Simple (without relationships) adapter for Mongodb collection. | [readme](./packages/nestjs-rest-mongodb/readme.md) |
 
 ---
