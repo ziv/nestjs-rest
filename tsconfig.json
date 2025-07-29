@@ -20,6 +20,9 @@
       ],
       "std-json-api/*": [
         "./packages/std-json-api/*"
+      ],
+      "std-json-api-client/*": [
+        "./packages/std-json-api-client/*"
       ]
     }
   },

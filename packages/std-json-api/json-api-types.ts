@@ -103,7 +103,7 @@ export interface PaginationLinks {
 /**
  * Base for a JSON:API document.
  */
-interface JsonApiDocumentBase {
+export interface JsonApiDocumentBase {
   jsonapi?: JsonApiObject;
   links?: Links & PaginationLinks;
   meta?: Meta;
