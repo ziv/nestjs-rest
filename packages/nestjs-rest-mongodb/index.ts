@@ -67,7 +67,6 @@ export default class MongodbAdapter<T extends Document & AttributesObject>
         }[];
         total: number;
     }> {
-        console.log(">>>", input);
         const pipeline: Document[] = [
             // search pipeline...
             {
