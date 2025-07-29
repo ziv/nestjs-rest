@@ -1,0 +1,53 @@
+{
+  "name": "std-json-api-client",
+  "version": "0.0.0",
+  "description": "JSON-API standard utilities for NestJS",
+  "main": "client.js",
+  "scripts": {
+    "build": "tsc -p tsconfig-lib.json"
+  },
+  "author": "Ziv Perry",
+  "license": "MIT",
+  "keywords": [
+    "json",
+    "api",
+    "json-api",
+    "specification",
+    "standard"
+  ],
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ziv/nestjs-rest.git",
+    "directory": "packages/std-json-api"
+  },
+  "bugs": {
+    "url": "https://github.com/ziv/nestjs-rest/issues"
+  },
+  "homepage": "https://github.com/ziv/nestjs-rest#readme",
+  "files": [
+    "*.js",
+    "*.d.ts",
+    "readme.md",
+    "license"
+  ],
+  "release": {
+    "extends": "semantic-release-monorepo",
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/npm",
+      "@semantic-release/github"
+    ]
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.1.5",
+    "@tsconfig/node22": "^22.0.2",
+    "@types/node": "^24.0.15",
+    "semantic-release": "^24.2.7",
+    "semantic-release-monorepo": "^8.0.2"
+  }
+}
