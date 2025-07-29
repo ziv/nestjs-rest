@@ -31,8 +31,8 @@
   },
   "homepage": "https://github.com/ziv/nestjs-rest#readme",
   "files": [
-    "*.js",
-    "*.d.ts",
+    "**/*.js",
+    "**/*.d.ts",
     "readme.md",
     "license"
   ],

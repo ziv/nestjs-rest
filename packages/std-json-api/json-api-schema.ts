@@ -12,9 +12,9 @@ export const createDocument = jsonDocument(z.object({
 }));
 
 export const updateDocument = jsonDocument(z.object({
-    type: z.string(),
-    attributes: z.record(z.string(), z.any()),
-    relationships: z.object({}).optional(), // todo complete with relationships schema
+  type: z.string(),
+  attributes: z.record(z.string(), z.any()),
+  relationships: z.object({}).optional(), // todo complete with relationships schema
 }));
 
 export type CreateDocument = z.infer<typeof createDocument>;

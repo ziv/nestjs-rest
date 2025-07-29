@@ -17,9 +17,20 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "nest-rest/*": [
+        "../nest-rest/*"
+      ],
+      "nest-rest-mongodb/*": [
+        "../nest-rest-mongodb/*"
+      ],
+      "std-json-api/*": [
+        "../std-json-api/*"
+      ]
+    }
   },
   "include": [
-    "src/**/*"
+    "**/*.ts"
   ]
 }

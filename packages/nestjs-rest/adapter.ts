@@ -1,24 +1,83 @@
-import {RestAdapterFilter, RestAdapterPagination, RestAdapterSorting} from "std-json-api/json-api-query";
-import {AttributesObject, CollectionResourceDocument, SingleResourceDocument} from "std-json-api/json-api-types";
+import type {
+  RestAdapterFilter,
+  RestAdapterPagination,
+  RestAdapterSorting,
+} from "./search";
+import { AttributesObject } from "std-json-api/json-api-types";
 
 export type MultipleArgs<Pagination = RestAdapterPagination> = {
-    filter: RestAdapterFilter;
-    sort: RestAdapterSorting[];
-    page: Pagination; // todo make generic
+  filter: RestAdapterFilter;
+  sort: RestAdapterSorting;
+  page: Pagination; // todo make generic
+  [key: string]: any;
 };
 
 export default interface JsonApiAdapter<
-    Model extends AttributesObject = AttributesObject,
+  Model extends AttributesObject = AttributesObject,
 > {
-    multiple<R extends Model = Model>(input: MultipleArgs): Promise<CollectionResourceDocument<R>>;
+  /**
+   * Create a new resource document and return metadata.
+   *
+   * @param data
+   */
+  create<R extends Model = Model>(data: R): Promise<{
+    meta: {
+      created: boolean;
+      id: string;
+    };
+  }>;
 
-    single<R extends Model = Model>(
-        id: string,
-    ): Promise<SingleResourceDocument<R>>;
+  /**
+   * Fetch multiple records of a specific resource.
+   *
+   * @param input
+   */
+  multiple(
+    input: MultipleArgs,
+  ): Promise<{
+    data: {
+      id: string;
+      attributes: AttributesObject;
+    }[];
+    total: number;
+  }>;
 
-    create<R = Model>(data: R): Promise<string>;
+  /**
+   * Fetch a single record of a specific resource by ID.
+   *
+   * @param id
+   */
+  single(
+    id: string,
+  ): Promise<{
+    data: {
+      id: string;
+      attributes: AttributesObject;
+    } | null;
+  }>;
 
-    update<R = Model>(id: string, data: Partial<R>): Promise<string>;
+  /**
+   * Update a resource document by ID and return metadata.
+   *
+   * @param id
+   * @param data
+   */
+  update<R = Model>(id: string, data: Partial<R>): Promise<{
+    meta: {
+      id: string;
+      updated: boolean;
+    };
+  }>;
 
-    remove(id: string): Promise<string>;
+  /**
+   * Delete a resource document by ID and return metadata.
+   *
+   * @param id
+   */
+  remove(id: string): Promise<{
+    meta: {
+      id: string;
+      deleted: boolean;
+    };
+  }>;
 }

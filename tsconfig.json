@@ -10,7 +10,18 @@
     "experimentalDecorators": true,
     "types": [
       "node"
-    ]
+    ],
+    "paths": {
+      "nest-rest/*": [
+        "./packages/nest-rest/*"
+      ],
+      "nest-rest-mongodb/*": [
+        "./packages/nest-rest-mongodb/*"
+      ],
+      "std-json-api/*": [
+        "./packages/std-json-api/*"
+      ]
+    }
   },
   "exclude": [
     "*_test.ts"

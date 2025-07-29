@@ -48,7 +48,8 @@
     ]
   },
   "dependencies": {
-    "nestjs-rest": "*"
+    "nestjs-rest": "*",
+    "std-json-api": "*"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
