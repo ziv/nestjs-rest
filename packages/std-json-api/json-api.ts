@@ -1,98 +1,141 @@
-import type {
-  AttributesObject,
-  CollectionResourceDocument,
-  JsonApiDocument,
-  Links,
-  Meta,
-  PaginationLinks,
-  ResourceObject,
-  SingleResourceDocument,
+import {
+    AttributesObject,
+    CollectionResourceDocument,
+    JsonApiDocument,
+    JsonApiDocumentBase,
+    Links as LinksObject,
+    Meta as MetaObject,
+    PaginationLinks,
+    ResourceObject,
+    SingleResourceDocument,
 } from "./json-api-types";
+
+/** Functional API for JSON:API documents and resources */
 
 export type Doc = Partial<JsonApiDocument>;
 export type Res = Partial<ResourceObject>;
+export type ResDoc = Res | Doc;
 export type UpdateFn<U> = (doc: U) => U;
 
-export function meta(m: Meta): UpdateFn<Doc> {
-  return (doc: Doc) => {
-    doc.meta = m;
-    return doc;
-  };
+function createUpdateFn<Input, Context>(key: string) {
+    return (input: Input): UpdateFn<Context> => {
+        return (doc: Context) => {
+            const k = key as keyof Context;
+            doc[k] = input as Context[keyof Context];
+            return doc;
+        }
+    }
 }
 
-export function links(l: Links & PaginationLinks): UpdateFn<Doc | Res> {
-  return (doc: Doc | Res) => {
-    doc.links = l;
-    return doc;
-  };
+function createPipeFn<Context>(isRoot = false) {
+    return <T>(...fns: UpdateFn<any>[]) => {
+        let doc: ResDoc = isRoot ? {jsonapi: {version: "1.0"}} : {};
+        for (const fn of fns) {
+            doc = fn(doc as Context);
+        }
+        return doc as T;
+    }
 }
 
-export function typed(type: string): UpdateFn<Res> {
-  return (res: Res) => {
-    res.type = type;
-    return res;
-  };
-}
+// Doc
+export const Data = createUpdateFn<object | object[], Doc>('data');
 
-export function identifier(id: string, type: string): UpdateFn<Res> {
-  return (res: Res) => {
-    res.id = id;
-    res.type = type;
-    return res;
-  };
-}
+// ResDoc
+export const Meta = createUpdateFn<MetaObject, ResDoc>('meta')
+export const Links = createUpdateFn<LinksObject & PaginationLinks, ResDoc>('links');
 
-export function attributes(attrs: any): UpdateFn<Res> {
-  return (res: Res) => {
-    res.attributes = attrs;
-    return res;
-  };
-}
-
-export function dataCollection<T extends AttributesObject = AttributesObject>(
-  resources: ResourceObject<T>[],
-): UpdateFn<Doc> {
-  return (doc: Doc) => {
-    (doc as CollectionResourceDocument).data = resources;
-    return doc;
-  };
-}
-
-export function dataResource<T extends AttributesObject = AttributesObject>(
-  resource: ResourceObject<T>,
-): UpdateFn<Doc> {
-  return (doc: Doc) => {
-    (doc as SingleResourceDocument).data = resource;
-    return doc;
-  };
-}
+// Res
+export const Type = createUpdateFn<string, Res>('type');
+export const Id = createUpdateFn<string, Res>('id');
+export const Attributes = createUpdateFn<object, Res>('attributes');
 
 // root elements
 
-export function resource<T extends AttributesObject>(...fns: UpdateFn<Res>[]) {
-  let res: Res = {};
-  for (const fn of fns) {
-    res = fn(res);
-  }
-  return res as ResourceObject<T>;
+export const Resource = createPipeFn<ResourceObject>();
+export const SingleDocument = createPipeFn<SingleResourceDocument>(true);
+export const CollectionDocument = createPipeFn<CollectionResourceDocument>(true);
+
+/** Builder API for JSON:API documents and resources */
+
+export class JsonApiBaseBuilder<T extends JsonApiDocumentBase = JsonApiDocumentBase> {
+    protected readonly resource: T = {} as T;
+
+    build(): T {
+        return this.resource as T;
+    }
+
+    as<R>(): R {
+        return this.resource as unknown as R;
+    }
+
+    metadata(m: MetaObject): this {
+        Meta(m)(this.resource);
+        return this;
+    }
+
+    links(l: LinksObject & PaginationLinks): this {
+        Links(l)(this.resource);
+        return this;
+    }
 }
 
-export function jsonApi<T>(...fns: UpdateFn<Doc>[]) {
-  let doc: Doc = { jsonapi: { version: "1.0" } };
-  for (const fn of fns) {
-    doc = fn(doc);
-  }
-  return doc as T;
+export class JsonApiResourceBuilder<T extends AttributesObject> extends JsonApiBaseBuilder<ResourceObject<T>> {
+
+    type(type: string): this {
+        Type(type)(this.resource);
+        return this;
+    }
+
+    id(id: string): this {
+        Id(id)(this.resource);
+        return this;
+    }
+
+    attributes(attrs: object): this {
+        Attributes(attrs)(this.resource);
+        return this;
+    }
 }
 
-export function collectionDocument<T extends AttributesObject>(
-  ...fns: UpdateFn<Doc>[]
-) {
-  return jsonApi<CollectionResourceDocument<T>>(...fns);
+export class JsonApiSingleDocumentBuilder<T extends AttributesObject> extends JsonApiBaseBuilder<T> {
+    data(resources: ResourceObject) {
+        Data(resources)(this.resource);
+        return this;
+    }
 }
 
-export function resourceDocument<T extends AttributesObject>(
-  ...fns: UpdateFn<Res>[]
-) {
-  return jsonApi<SingleResourceDocument<T>>(...fns);
+export class JsonApiCollectionDocumentBuilder<T extends JsonApiDocumentBase> extends JsonApiBaseBuilder<T> {
+    data(resources: ResourceObject[]) {
+        Data(resources)(this.resource);
+        return this;
+    }
+}
+
+export class JsonApiBuilder {
+    /**
+     * Create a new resource builder with the given ID and type.
+     *
+     * @param id
+     * @param type
+     */
+    static resource<T extends AttributesObject>(id: string, type: string) {
+        const builder = new JsonApiResourceBuilder<T>();
+        builder.id(id);
+        builder.type(type);
+        return builder;
+    }
+
+    /**
+     * Create a new single document builder.
+     */
+    static singleDocument<T extends AttributesObject>() {
+        return new JsonApiSingleDocumentBuilder<SingleResourceDocument<T>>();
+    }
+
+    /**
+     * Create a new collection document builder.
+     */
+    static collectionDocument<T extends AttributesObject>() {
+        return new JsonApiCollectionDocumentBuilder<CollectionResourceDocument<T>>();
+    }
 }
