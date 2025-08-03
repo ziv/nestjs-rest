@@ -1,16 +1,16 @@
 import {describe, it} from 'node:test';
 import expect from "expect";
-import {Describe} from "std-json-api/desciptor";
+import Describe from "std-json-api/desciptor";
 
 describe('descriptor', () => {
     it('should throw for missing ID key', () => {
         const d = Describe('test').setBaseUrl('http://localhost');
-        expect(() => d.describe()).toThrow();
+        expect(() => d.build()).toThrow();
     });
 
     it('should throw for missing base url', () => {
         const d = Describe('test').setIdKey('test');
-        expect(() => d.describe()).toThrow();
+        expect(() => d.build()).toThrow();
     });
 
     it('should create a valid descriptor', () => {
@@ -23,7 +23,7 @@ describe('descriptor', () => {
                     name: 'string',
                     age: 'number'
                 })
-                .describe()
+                .build()
         ).toEqual({
             resourceId: 'test',
             baseUrl: 'http://localhost',

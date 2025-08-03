@@ -1,54 +1,74 @@
 # std-json-api
 
-Functional standard `JSON:API` serializers.
+Functional standard `JSON:API` serializers, schemas, and utilities for building `JSON:API` compliant applications.
 
-# Usage
+## Types & Schemas
 
-### Creating a resource
+All types are exported from `std-api`.
+Each type has a `zod` schema that can be used to validate the data structure.
 
-```ts
-import { attributes, identifier, resource } from "std-json-api/std-api";
+```typescript
+import type {MetaObject} from 'std-json-api/std-api';
+import type {metaObject} from 'std-json-api/schemas/meta-object';
 
-const res = resource(
-  identifier("resource-id", "resource-type"),
-  attributes({
-    foo: "bar",
-    baz: 42,
-  }),
-  // ...meta, links, ...
+// validate a meta object example
+metaObject.parse({});
+```
+
+## ResourceDescriptor
+
+A utility to describe a `JSON:API` resource with its attributes and relationships.
+
+```typescript
+import Describe from 'std-json-api/descriptor';
+
+const desc = Describe('resource-id')
+    .addAttr('name', 'string')
+    .addReleationship('related-resource', 'related-type', 'related-id')
+    .build();
+
+
+```
+
+## Functional Builder API
+
+Provides a functional API for building `JSON:API` documents.
+
+```typescript
+import {SingleDocument, Attributes, Meta, Resource, Id, Type} from "std-json-api/builder-fn";
+
+const doc = SingleDocument(
+    Meta({}),
+    Data(
+        Resource(
+            Id('...'),
+            Type('...'),
+            Attributes({
+                ...
+            })
+        )
+    )
 );
 ```
 
-### Creating a single resource document
+## Builder API
 
-```ts
-import {
-  attributes,
-  identifier,
-  resource,
-  resourceData,
-  resourceDocument,
-} from "std-json-api/std-api";
+Provides an API for building `JSON:API` documents.
 
-const doc = resourceDocument(
-  resourceData({/* resource object, see previous example*/}),
-  // ...meta, links, ...
-);
+```typescript
+import JsonApiBuilder from "std-json-api/builder";
+
+const doc = JsonApiBuilder
+    .singleDocument()
+    .meta({})
+    .data(
+        JsonApiBuilder.resource()
+            .id('...')
+            .type('...')
+            .attributes({
+                ...
+            })
+    )
+
 ```
 
-### Creating a resource collection document
-
-```ts
-import {
-  attributes,
-  collectionData,
-  collectionDocument,
-  identifier,
-  resource,
-} from "std-json-api/std-api";
-
-const doc = collectionDocument(
-  collectionData({/* list of resource objects, see previous example*/}),
-  // ...meta, links, ...
-);
-```

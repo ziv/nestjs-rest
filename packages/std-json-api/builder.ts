@@ -71,7 +71,7 @@ export class JsonApiCollectionDocumentBuilder<T extends BaseDocument>
     }
 }
 
-export class JsonApiBuilder {
+export default class JsonApiBuilder {
     /**
      * Create a new resource builder with the given ID and type.
      *
