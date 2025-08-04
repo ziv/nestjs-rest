@@ -12,14 +12,14 @@ export const baseDocument = z.object({
     jsonapi: jsonApiObject.optional(),
     links: links.optional(),
     meta: metaObject.optional(),
+    included: z.any().optional(), // todo complete this schema
 });
 
 export const singleResourceDocument = baseDocument.extend({
     data: z.union([resourceData, resourceNull]),
-    included: z.any(), // todo complete this schema
+
 })
 
 export const collectionResourceDocument = baseDocument.extend({
     data: resourceDataCollection,
-    included: z.any(), // todo complete this schema
 })

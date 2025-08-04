@@ -2,7 +2,7 @@
   "name": "std-json-api-client",
   "version": "0.0.0",
   "description": "Isomorphic JSON-API client",
-  "main": "client.js",
+  "main": "index.js",
   "scripts": {
     "build": "tsc -p tsconfig-lib.json"
   },
