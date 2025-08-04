@@ -87,7 +87,7 @@ export default class MongodbAdapter<T extends Doc> implements JsonApiAdapter<T> 
          * We must sort to keep pagination consistent
          * If specified, sort by the given fields.
          */
-        pipeline.push((Object.keys(input.sort).length > 0) ? {$sort: input.sort} : {_id: 1});
+        pipeline.push((Object.keys(input.sort).length > 0) ? {$sort: input.sort} : {$sort: {_id: 1}});
 
         /**
          * Add projection
