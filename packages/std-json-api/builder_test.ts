@@ -1,5 +1,5 @@
 import {describe, it} from 'node:test';
-import {JsonApiBuilder} from "std-json-api/builder";
+import JsonApiBuilder from "std-json-api/builder";
 import expect from "expect";
 
 describe('builder', () => {

@@ -59,7 +59,7 @@ export class JsonApiDescriptor {
         return this;
     }
 
-    describe() {
+    build() {
         if (!this.desc.idKey) {
             throw new Error("ID key is not set.");
         }
@@ -70,6 +70,6 @@ export class JsonApiDescriptor {
     }
 }
 
-export function Describe(resourceId: string) {
+export default function Describe(resourceId: string) {
     return new JsonApiDescriptor(resourceId);
 }
