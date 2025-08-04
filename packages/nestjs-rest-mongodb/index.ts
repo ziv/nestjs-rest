@@ -1,7 +1,6 @@
 import type {Collection, Document, MatchKeysAndValues, OptionalUnlessRequiredId,} from "mongodb";
 import {ObjectId} from "mongodb";
 import JsonApiAdapter, {CreateResponse, RemoveResponse, UpdateResponse} from "nestjs-rest/adapter";
-import {ResourceDescriptor} from "std-json-api/desciptor";
 import {JsonApiQuery} from "std-json-api/query-string-parser";
 import OffsetPagination from "nestjs-rest/pagination/offset-pagination";
 import {
@@ -22,6 +21,7 @@ import {
     Type
 } from "std-json-api/builder-fn";
 import {NotFoundException} from "@nestjs/common";
+import {ResourceDescriptor} from "std-json-api/desciptor";
 
 // todo implement includes and relationships
 
