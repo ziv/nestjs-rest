@@ -1,196 +1,212 @@
-import type {
-    Collection,
-    Document,
-    Filter,
-    MatchKeysAndValues,
-    OptionalUnlessRequiredId,
-} from "mongodb";
+import type {Collection, Document, MatchKeysAndValues, OptionalUnlessRequiredId,} from "mongodb";
 import {ObjectId} from "mongodb";
-import JsonApiAdapter, {type MultipleArgs} from "nestjs-rest/adapter";
-import type {AttributesObject} from "std-json-api/json-api-types";
+import JsonApiAdapter, {CreateResponse, RemoveResponse, UpdateResponse} from "nestjs-rest/adapter";
+import {ResourceDescriptor} from "std-json-api/desciptor";
+import {JsonApiQuery} from "std-json-api/query-string-parser";
+import OffsetPagination from "nestjs-rest/pagination/offset-pagination";
+import {
+    AttributesObject,
+    CollectionResourceDocument,
+    SingleResource,
+    SingleResourceDocument
+} from "std-json-api/json-api";
+import {
+    Attributes,
+    CollectionDocument,
+    Data,
+    Id,
+    Links,
+    Meta,
+    Resource,
+    SingleDocument,
+    Type
+} from "std-json-api/builder-fn";
+import {NotFoundException} from "@nestjs/common";
 
-export type MongodbAdapterOptions<T extends Document> = {
-    /**
-     * Resource id
-     */
-    id: string;
+// todo implement includes and relationships
 
-    /**
-     * MongoDB collection that represents the resource.
-     */
+// local types
+type Doc = Document & AttributesObject;
+
+export type MongodbAdapterOptions<T extends Doc> = {
+    descriptor: ResourceDescriptor;
     collection: Collection<T>;
-
-    /**
-     * Project primary key
-     */
-    primaryKey: string;
-
-    /**
-     * Create a filter by unique identifier.
-     *
-     * @param id
-     */
-    uniqueFactory: (input: string) => Filter<T>;
+    collections: { [key: string]: string; };
+    relatedCollections: { [key: string]: Collection; };
+    uniqueFactory: (input: string) => MatchKeysAndValues<T>;
 };
 
-export default class MongodbAdapter<T extends Document & AttributesObject>
-    implements JsonApiAdapter<T> {
+
+export default class MongodbAdapter<T extends Doc> implements JsonApiAdapter<T> {
     readonly options: MongodbAdapterOptions<T>;
 
-    /**
-     * @param options
-     */
     constructor(options: Partial<MongodbAdapterOptions<T>>) {
-        if (!options.primaryKey) {
-            options.primaryKey = "_id";
+        if (!options.descriptor) {
+            throw new Error("MongodbAdapter requires ResourceDescriptor");
         }
+        //
+        if (options.collections) {
+            // todo check that all collection is defined by the descriptor
+        } else if (options.collection && options.relatedCollections) {
+            // todo check that collection is defined by the descriptor
+        } else {
+            throw new Error("MongodbAdapter requires either collections or collection and relatedCollections");
+        }
+
         if (!options.uniqueFactory) {
-            if (options.primaryKey !== "_id") {
-                options.uniqueFactory = (
-                    id,
-                ) => ({[options.primaryKey as string]: id} as Filter<T>);
-            } else {
-                options.uniqueFactory = (
-                    id: string,
-                ) => ({_id: new ObjectId(id)} as Filter<T>);
-            }
+            const key = options.descriptor.idKey;
+            options.uniqueFactory = ('_id' === key)
+                ? (id: string) => ({_id: new ObjectId(id)} as MatchKeysAndValues<any>)
+                : (id: string) => ({[key]: id} as MatchKeysAndValues<any>);
         }
+
         this.options = options as MongodbAdapterOptions<T>;
     }
 
-    async multiple(
-        input: MultipleArgs,
-    ): Promise<{
-        data: {
-            id: string;
-            attributes: AttributesObject;
-        }[];
-        total: number;
-    }> {
-        const pipeline: Document[] = [
-            // search pipeline...
-            {
-                $match: input.filter,
-            }
-        ];
+    /**
+     * For more information about the input format, see
+     * @see ../std-json-api/query-string-parser.ts
+     *
+     * @param input
+     */
+    async multiple(input: JsonApiQuery): Promise<CollectionResourceDocument> {
+        const {resourceId, idKey} = this.options.descriptor;
+        const {limit, offset} = input.page;
+        const paginator = this.paginator(input);
+        /**
+         * Let's build the aggregation pipeline for searching...
+         */
+        const pipeline: Document[] = [];
 
-        // we must sort to keep pagination consistent
-        if ((input.sort && Object.keys(input.sort ?? {}).length > 0)) {
-            pipeline.push({$sort: input.sort});
-        } else {
-            pipeline.push({$sort: {_id: 1}});
+        /**
+         * Start with the match stage.
+         */
+        pipeline.push({$match: input.filter});
+
+        /**
+         * We must sort to keep pagination consistent
+         * If specified, sort by the given fields.
+         */
+        pipeline.push((Object.keys(input.sort).length > 0) ? {$sort: input.sort} : {_id: 1});
+
+        /**
+         * Add projection
+         */
+        if (input.fields && input.fields[resourceId]) {
+            pipeline.push({$project: input.fields[resourceId]});
         }
 
-        // project items if specified
-        if ((input.fields && input.fields[this.options.id])) {
-            pipeline.push({
-                $project: input.fields[this.options.id].split(",").reduce(
-                    (acc: { [key: string]: 1 }, cur: string) => ({
-                        ...acc,
-                        [cur]: 1,
-                    }),
-                    {},
-                )
-            })
-        }
-
-        // pagination
+        /**
+         * Add pagination
+         */
         pipeline.push({
             $facet: {
                 metadata: [{$count: "total"}],
-                data: [{$skip: input.page.offset}, {$limit: input.page.limit}],
+                data: [{$skip: offset}, {$limit: limit}],
             },
-        },)
+        });
 
-        // collect the results
+        /**
+         * collect the results
+         */
         pipeline.push({
             $project: {
-                data: "$data",
+                docs: "$data",
                 total: {$arrayElemAt: ["$metadata.total", 0]},
             },
         });
 
-        const [{data, total}] = await this.options.collection.aggregate(pipeline).toArray();
-        const ret: { id: string; attributes: AttributesObject }[] = [];
-        for (const doc of data) {
-            const {[this.options.primaryKey]: id, ...attributes} =
-                doc as AttributesObject;
-            ret.push({id, attributes});
+        const [{docs, total}] = await this.options.collection.aggregate(pipeline).toArray();
+
+
+        // create the offset-based paginator if none was provided
+        // const paginator = new OffsetPagination(`${baseUrl}/${resourceId}`, limit, offset, total);
+
+        const data: SingleResource[] = [];
+
+        // convert list into the list of resources
+        for (const doc of docs) {
+            data.push(Resource(
+                Id(String(doc[idKey])),
+                Type(resourceId),
+                Attributes(doc as AttributesObject),
+                Links(paginator.self(doc[idKey]))
+            ));
         }
 
-        return {data: ret, total};
+        // get the collection paginator
+        const collPaginator = paginator.collection(limit, offset, total);
+
+        // create the collection document
+        return CollectionDocument(
+            Links(collPaginator.pagination()),
+            Meta(collPaginator.metadata()),
+            Data(data),
+        );
     }
 
-    async single(id: string): Promise<{
-        data: {
-            id: string;
-            attributes: AttributesObject;
-        } | null;
-    }> {
+    async single(id: string): Promise<SingleResourceDocument> {
         const doc = await this.options.collection.findOne(
             this.options.uniqueFactory(id),
         );
         if (!doc) {
-            return {data: null};
+            throw new NotFoundException(`No document with id ${id}`);
         }
-        const {[this.options.primaryKey]: extractedId, ...attributes} = doc;
-        return {
-            data: {
-                id: String(extractedId),
-                attributes,
-            },
-        };
+        return SingleDocument(
+            Links(this.paginator().self(id)),
+            Meta({id}),
+            Data(Resource(
+                Id(id),
+                Type(this.options.descriptor.resourceId),
+                Attributes(doc as AttributesObject),
+            ))
+        );
     }
 
-    async create<R extends T = T>(data: R): Promise<{
-        meta: {
-            created: boolean;
-            id: string;
-        };
-    }> {
+    async create<R = T>(data: R): Promise<CreateResponse> {
         const {insertedId} = await this.options.collection.insertOne(
             data as OptionalUnlessRequiredId<T>,
         );
-        return {
-            meta: {
+        return SingleDocument(
+            Meta({
                 created: true,
                 id: String(insertedId),
-            },
-        };
+            }),
+            Links(this.paginator().self(String(insertedId))),
+            Data(null)
+        );
     }
 
-    async update<R = T>(id: string, data: Partial<R>): Promise<{
-        meta: {
-            id: string;
-            updated: boolean;
-        };
-    }> {
+    async update<R = T>(id: string, data: Partial<R>): Promise<UpdateResponse> {
         const res = await this.options.collection.updateOne(
             this.options.uniqueFactory(id),
             {
                 $set: data as MatchKeysAndValues<any>,
             },
         );
-        return {
-            meta: {
-                id: String(id),
+        return SingleDocument(
+            Meta({
                 updated: res.modifiedCount === 1,
-            },
-        };
+                id,
+            }),
+            Links(this.paginator().self(id)),
+            Data(null)
+        );
     }
 
-    async remove(id: string): Promise<{
-        meta: {
-            id: string;
-            deleted: boolean;
-        };
-    }> {
+    async remove(id: string): Promise<RemoveResponse> {
         await this.options.collection.deleteOne(this.options.uniqueFactory(id));
-        return {
-            meta: {
-                id: String(id),
+        return SingleDocument(
+            Meta({
+                id,
                 deleted: true,
-            },
-        };
+            }),
+            Data(null)
+        );
+    }
+
+    protected paginator(input: object = {}) {
+        const {baseUrl, resourceId} = this.options.descriptor;
+        return new OffsetPagination(`${baseUrl}/${resourceId}`, input);
     }
 }
