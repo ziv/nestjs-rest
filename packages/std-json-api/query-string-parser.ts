@@ -42,11 +42,14 @@ function parsed2fields(fields?: unknown): JsonApiQueryFields {
     if (!fields) {
         return {};
     }
+    if (typeof fields === "string") {
+        fields = qs.parse(fields);
+    }
     if (typeof fields !== "object") {
         return {};
     }
     const ret: JsonApiQueryFields = {};
-    for (const [resource, val] of Object.entries(fields)) {
+    for (const [resource, val] of Object.entries(fields as object)) {
         if (!ret[resource]) {
             ret[resource] = {};
         }
@@ -81,6 +84,9 @@ function parsed2fields(fields?: unknown): JsonApiQueryFields {
  * @param page
  */
 function parsed2pagination(page: unknown): RestAdapterPagination {
+    if (typeof page === "string") {
+        page = qs.parse(page);
+    }
     if (
         typeof page === "object" && page !== null && "offset" in page &&
         "limit" in page
