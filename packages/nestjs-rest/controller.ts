@@ -1,19 +1,16 @@
 import {Body, Delete, Get, Header, Param, Patch, Post,} from "@nestjs/common";
-import {ZodType} from "zod";
-import JsonApiAdapter from "./adapter";
+import type JsonApiAdapter from "./adapter";
 import Search from "./decorators/search";
-import {CollectionResourceDocument, PlainDocument, SingleResourceDocument} from "std-json-api/json-api";
-import {JsonApiQuery} from "std-json-api/query-string-parser";
+import type {CollectionResourceDocument, PlainDocument, SingleResourceDocument} from "std-json-api/json-api";
+import type {JsonApiQuery} from "std-json-api/query-string-parser";
 
 export type JsonApiControllerOptions = {
     /**
-     * Array of REST adapters that provide CRUD operations for different resources.
+     * Rest Adapter that provides CRUD operations for the resource.
+     * It should implement the `JsonApiAdapter` interface.
+     * @see https://jsonapi.org/format/#crud-creating
      */
     adapter: JsonApiAdapter;
-    resourceId: string;
-    baseUrl: string;
-    createSchema: ZodType;
-    updateSchema: ZodType;
 };
 
 export default class JsonApiController {

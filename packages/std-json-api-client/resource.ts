@@ -1,8 +1,8 @@
-import type {ResourceObject} from "std-json-api/json-api-types";
+import type { ResourceObject } from "../../tmp/json-api-types";
 
 export default class JsonApiResource {
-    constructor(
-        readonly collection: ResourceObject
-    ) {
-    }
+  constructor(
+    readonly collection: ResourceObject,
+  ) {
+  }
 }

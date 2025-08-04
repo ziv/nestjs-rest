@@ -1,74 +1,58 @@
-import { Controller, Get, Inject, Logger, Module } from "@nestjs/common";
-import { NestFactory } from "@nestjs/core";
+import {Logger, Module} from "@nestjs/common";
+import {NestFactory} from "@nestjs/core";
 import MongodbAdapter from "nestjs-rest-mongodb";
-import { MongoClient } from "mongodb";
-import JsonApiController, {
-  JsonApiControllerOptions,
-} from "nestjs-rest/controller";
+import {MongoClient} from "mongodb";
+import {Articles, Authors, Comments, Root} from "./controllers";
+import Describe from "std-json-api/desciptor";
 
-@Controller("flags")
-export class Ctr extends JsonApiController {
-  constructor(@Inject("JSON_API_FLAGS") options: JsonApiControllerOptions) {
-    super(options);
-  }
-
-  @Get("favicon.ico")
-  favicon() {
-    // Handle favicon requests
-    return { message: "Favicon request received" };
-  }
+function createAdapter(client: MongoClient, id: string) {
+    const descriptor = Describe(id)
+        .setBaseUrl("http://localhost:3001")
+        .setIdKey('_id')
+        .build();
+    return {
+        adapter: new MongodbAdapter({
+            descriptor,
+            collection: client.db("demo").collection(id),
+            relatedCollections: {}
+        }),
+    };
 }
 
 @Module({
-  controllers: [Ctr],
-  providers: [
-    {
-      provide: "JSON_API_FLAGS",
-      useFactory: async () => {
-        const client = new MongoClient("mongodb://localhost:27017");
-        await client.connect();
-        const collection = client.db("flags").collection("flags");
-        const adapter = new MongodbAdapter({
-          collection,
-          id: "flags",
-          // baseUrl: "http://localhost:3001",
-          // projectItems: {
-          //   key: 1,
-          //   name: 1,
-          // },
-          // updateSchema: z.any(),
-          // creationSchema: z.any(),
-          // projectItem: {
-          //   key: 1,
-          //   name: 1,
-          //   description: 1,
-          //   createdAt: 1,
-          //   updatedAt: 1,
-          //   temporary: 1,
-          //   archived: 1,
-          //   appearances: 1,
-          //   status: 1,
-          //   statusLog: 1,
-          //   statusType: 1,
-          //   statusReason: 1,
-          //   on: 1,
-          // },
-        });
-        return {
-          adapter,
-          baseUrl: "http://localhost:3001",
-          resourceId: "flags",
-        };
-      },
-    },
-  ],
+    providers: [
+        {
+            provide: MongoClient,
+            useFactory: async (): Promise<MongoClient> => {
+                const client = new MongoClient("mongodb://mongodb:27017");
+                await client.connect();
+                return client;
+            },
+        },
+        {
+            provide: "Comments",
+            inject: [MongoClient],
+            useFactory: (client: MongoClient) => createAdapter(client, "comments"),
+        },
+        {
+            provide: "Articles",
+            inject: [MongoClient],
+            useFactory: (client: MongoClient) => createAdapter(client, "articles"),
+        },
+        {
+            provide: "Authors",
+            inject: [MongoClient],
+            useFactory: (client: MongoClient) => createAdapter(client, "authors"),
+        },
+    ],
+    controllers: [Root, Comments, Articles, Authors],
 })
 export class App {
 }
 
 (async () => {
-  const app = await NestFactory.create(App);
+    const app = await NestFactory.create(App);
 
-  await app.listen(3001);
-  Logger.log("Server is running on http://localhost:3001", "Bootstrap");
+    await app.listen(3001, "0.0.0.0");
+    Logger.log("Server is running on http://localhost:3001", "Bootstrap");
 })();

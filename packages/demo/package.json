@@ -7,11 +7,13 @@
     "start": "nest start --watch"
   },
   "dependencies": {
-    "std-json-api": "file://./../std-json-api",
     "nestjs-rest": "file://./../nestjs-rest",
-    "nestjs-rest-mongodb": "file://./../nestjs-rest-mongodb"
+    "nestjs-rest-mongodb": "file://./../nestjs-rest-mongodb",
+    "std-json-api": "file://./../std-json-api",
+    "zod": "^4.0.14"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
     "@nestjs/cli": "^11.0.7",
     "@nestjs/common": "^11.1.5",
     "@nestjs/core": "^11.1.5",
