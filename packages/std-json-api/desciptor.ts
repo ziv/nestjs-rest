@@ -70,6 +70,6 @@ export class JsonApiDescriptor {
     }
 }
 
-export default function Describe(resourceId: string) {
+export function Describe(resourceId: string) {
     return new JsonApiDescriptor(resourceId);
 }
