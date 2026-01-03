@@ -61,7 +61,7 @@
     "zod": "^4.0.5"
   },
   "peerDependencies": {
-    "mongodb": "^6.17.0",
-    "zod": "^4.0.5"
+    "mongodb": ">=6.17.0",
+    "zod": ">=4.0.5"
   }
 }
