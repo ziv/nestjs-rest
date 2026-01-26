@@ -1,6 +1,6 @@
 import {describe, it} from 'node:test';
 import expect from "expect";
-import Describe from "std-json-api/desciptor";
+import { Describe } from "./descriptor";
 
 describe('descriptor', () => {
     it('should throw for missing ID key', () => {

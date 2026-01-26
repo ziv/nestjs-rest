@@ -21,7 +21,7 @@ import {
     Type
 } from "std-json-api/builder-fn";
 import {NotFoundException} from "@nestjs/common";
-import {ResourceDescriptor} from "std-json-api/desciptor";
+import {ResourceDescriptor} from "std-json-api/descriptor";
 
 // todo implement includes and relationships
 
