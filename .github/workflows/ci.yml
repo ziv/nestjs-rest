@@ -46,3 +46,7 @@ jobs:
       - name: 🦋release nestjs-rest
         if: contains(github.event.head_commit.message, '(nestjs-rest)')
         run: npm run release -w packages/nestjs-rest
+
+      - name: 🦋release nestjs-rest-mongodb
+        if: contains(github.event.head_commit.message, '(nestjs-rest-mongodb)')
+        run: npm run release -w packages/nestjs-rest-mongodb
