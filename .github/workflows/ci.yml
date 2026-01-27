@@ -6,7 +6,6 @@ on:
 #    branches:
 #      - main
 permissions:
-  #  contents: read # for checkout
   contents: write # to be able to publish a GitHub release
   issues: write # to be able to comment on released issues
   pull-requests: write # to be able to comment on released pull requests
@@ -15,6 +14,8 @@ jobs:
   prepare:
     name: Prepare release
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - name: ⛵️ checkout
         uses: actions/checkout@v4
@@ -46,9 +47,7 @@ jobs:
       #        run: cd packages/nestjs-rest-mongodb && npx semantic-release
       #
       - name: 🦋release std-json-api
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_PUBLISH }}
+        if: contains(github.event.head_commit.message, '(std-json-api)')
         run: npm run release -w packages/std-json-api
 #
 #      - name: 🦋release std-json-api-client
