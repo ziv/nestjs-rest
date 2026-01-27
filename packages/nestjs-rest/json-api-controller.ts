@@ -1,3 +1,4 @@
+import {debuglog} from 'node:util';
 import {
   Body,
   Delete,
@@ -26,6 +27,8 @@ import {
 } from "std-json-api";
 import type { JsonApiAdapter } from "./adapter";
 import { JsonQuery } from "./json-query";
+
+const log = debuglog("nestjs-rest");
 
 /**
  * Configuration options for the JSON:API controller.
@@ -108,6 +111,7 @@ export class JsonApiController {
   async multiple(
     @JsonQuery() query: JsonApiQuery,
   ): Promise<JsonApiCollectionDocument> {
+    console.log('>>>', query);
     const result = await this.options.adapter.multiple(query);
     const resources = result.data.map((model) =>
       this.transformModelToResource(model)

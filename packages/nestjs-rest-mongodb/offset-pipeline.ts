@@ -45,7 +45,7 @@ export function OffsetPipeline(options: MongodbAdapterOptions<any>, query: JsonA
                 {$count: "total"},
             ],
             data: [
-                {$skip: offset},
+                {$skip: offset * limit},
                 {$limit: limit},
             ],
         },

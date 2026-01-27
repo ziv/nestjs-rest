@@ -45,8 +45,11 @@ export class MongoAdapter<T extends Doc> implements JsonApiAdapter<T> {
         const [{docs, total}] = results as [{ docs: T[], total: number }];
         log("Aggregation results - total: %d, docs count: %d", total, docs.length);
 
+        // for any other usage then working with mongo object id, convert _id to string
+        const data = (docs || []).map(d => ({...d, _id: String(d._id)}));
+
         return {
-            data: docs || [],
+            data,
             meta: {
                 total: total || 0,
             }
