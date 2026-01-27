@@ -119,6 +119,7 @@ describe("parser", () => {
       const result = parser("page[cursor]=eyJpZCI6MTAwfQ==&page[limit]=20");
       expect(result.page).toEqual({
         cursor: "eyJpZCI6MTAwfQ==",
+        field: "id",
         limit: 20,
       });
     });
@@ -129,6 +130,7 @@ describe("parser", () => {
       );
       const page = result.page as CursorPagination;
       expect(page).toHaveProperty("cursor", "abc123");
+      expect(page).toHaveProperty("field", "id");
       expect(page).toHaveProperty("limit", 10);
     });
 
@@ -136,6 +138,7 @@ describe("parser", () => {
       const result = parser("page[cursor]=abc123");
       expect(result.page).toEqual({
         cursor: "abc123",
+        field: "id",
         limit: 10,
       });
     });
@@ -146,6 +149,7 @@ describe("parser", () => {
       const result = parser(`page[cursor]=${cursor}&page[limit]=15`);
       expect(result.page).toEqual({
         cursor,
+        field: "id",
         limit: 15,
       });
     });
@@ -533,7 +537,7 @@ describe("parser", () => {
       );
 
       expect(result.sort).toEqual({ createdAt: -1 });
-      expect(result.page).toEqual({ cursor: "eyJpZCI6MTIzfQ", limit: 20 });
+      expect(result.page).toEqual({ cursor: "eyJpZCI6MTIzfQ", field: "id", limit: 20 });
       expect(result.include).toEqual(["author", "mentions", "media"]);
     });
   });

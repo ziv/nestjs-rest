@@ -264,16 +264,16 @@ function parsePageParameter(
     // Check for cursor-based pagination
     if ("cursor" in pageObj && typeof pageObj.cursor === "string") {
         const cursor = pageObj.cursor;
-        const field = pageObj.field
+        const field = typeof pageObj.field === "string"
+            ? pageObj.field
+            : "id"; // Default field for cursor pagination
         const limit = typeof pageObj.limit === "string"
             ? parseInt(pageObj.limit, 10)
-            : undefined;
+            : 10; // Default limit
 
-        if (field !== undefined && limit !== undefined && !isNaN(limit)) {
-            return {cursor, limit, field} as CursorPagination;
+        if (!isNaN(limit)) {
+            return {cursor, field, limit} as CursorPagination;
         }
-        // If no valid limit, return just cursor (though technically incomplete)
-        return {cursor, limit: 10} as CursorPagination;
     }
 
     // Check for offset-based pagination
