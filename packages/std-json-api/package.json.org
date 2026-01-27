@@ -1,10 +1,12 @@
 {
-  "name": "std-json-api-client",
+  "name": "std-json-api",
   "version": "0.0.0",
-  "description": "Isomorphic JSON-API client",
+  "description": "JSON-API standard utilities for NestJS",
   "main": "index.js",
+  "types": "types.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig-lib.json"
+    "build": "tsc -p tsconfig-lib.json",
+    "test": "tsx --test"
   },
   "author": "Ziv Perry",
   "license": "MIT",
@@ -22,7 +24,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ziv/nestjs-rest.git",
-    "directory": "packages/std-json-api-client"
+    "directory": "packages/std-json-api"
   },
   "bugs": {
     "url": "https://github.com/ziv/nestjs-rest/issues"
@@ -43,14 +45,12 @@
       "@semantic-release/github"
     ]
   },
-  "peerDependencies": {
-    "std-json-api": "*"
-  },
   "devDependencies": {
-    "@nestjs/common": "^11.1.5",
-    "@tsconfig/node22": "^22.0.2",
-    "@types/node": "^24.0.15",
+    "expect": "^30.0.5",
     "semantic-release": "^24.2.7",
     "semantic-release-monorepo": "^8.0.2"
+  },
+  "dependencies": {
+    "qs": "^6.14.1"
   }
 }
