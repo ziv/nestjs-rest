@@ -1,3 +1,3 @@
 # nestjs-rest
 
-NestJS JSON:API compatibly controller.
+NestJS JSON:API controller.
