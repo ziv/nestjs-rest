@@ -15,17 +15,16 @@ sorting, pagination, filtering, and more.
 
 ## Contents
 
-| Package Name                                            | Description                                                                               |
-|---------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| [`std-json-api`](./packages/std-json-api)               | Standard JSON:API implementation, providing the core functionality of document structure. |
-| [`std-json-api-client`](./packages/std-json-api-client) | Isomorphic HTTP/JSON:API client.                                                          |
-| [`nestjs-rest`](./packages/nestjs-rest)                 | NestJS controller that implements the JSON:API specification.                             |
-| [`nestjs-rest-mongodv`](./packages/nestjs-rest-mongodb) | Mongodb adapter for `nestjs-rest` package.                                                |
+| Package Name                                            | Version                                                          | Description                                                                              |
+|---------------------------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| [`std-json-api`](./packages/std-json-api)               | ![NPM Version](https://img.shields.io/npm/v/std-json-api)        | Standard JSON:API implementation, providing the core functionality of document structure |
+| [`nestjs-rest`](./packages/nestjs-rest)                 | ![NPM Version](https://img.shields.io/npm/v/nestjs-rest)         | NestJS controller that implements the JSON:API                                           |                     
+| [`nestjs-rest-mongodb`](./packages/nestjs-rest-mongodb) | ![NPM Version](https://img.shields.io/npm/v/nestjs-rest-mongodb) | MongoDB adapter for `nestjs-rest`                                                        |                     
 
 ## Specification
 
-`JSON:API/v1` specification is a standard for building APIs in JSON format
-([reference](./packages/std-json-api/specs.md)).
+`JSON:API/v1` specification is a standard for building APIs in JSON
+format([reference](./packages/std-json-api/specs.md)).
 
 ## Pagination Strategies
 
@@ -34,7 +33,7 @@ There are two pagination strategies supported by this project:
 | Pagination Strategy     | Status | Description                                                                                          |
 |-------------------------|--------|------------------------------------------------------------------------------------------------------|
 | Offset-based pagination | ✈️     | Default pagination strategy using offset and limit query parameters.                                 |
-| Cursor-based pagination | 🚫     | Pagination strategy using cursor to provide a more efficient way to paginate through large datasets. |
+| Cursor-based pagination | ✈️     | Pagination strategy using cursor to provide a more efficient way to paginate through large datasets. |
 
 ### Implementation Report
 
