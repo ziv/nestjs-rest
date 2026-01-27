@@ -1,3 +1,3 @@
 # nestjs-rest
 
-NestJS utility for creating simple REST/CRUD controllers.
+NestJS JSON:API compatibly controller.
