@@ -4,7 +4,9 @@
   "description": "Mongodb adapter for NestJS REST",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p tsconfig-lib.json"
+    "build": "tsc -p tsconfig-lib.json",
+    "test": "tsx --test",
+    "release": "semantic-release"
   },
   "author": "Ziv Perry",
   "license": "MIT",
@@ -39,7 +41,7 @@
     "license"
   ],
   "release": {
-    "extends": "semantic-release-monorepo",
+    "tagFormat": "nestjs-rest-mongodb-v${version}",
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
@@ -51,8 +53,7 @@
     "nestjs-rest": "*",
     "std-json-api": "*"
   },
-  "devDependencies": {
-  },
   "peerDependencies": {
+    "mongodb": ">=6.0.0"
   }
 }

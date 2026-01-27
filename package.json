@@ -9,7 +9,7 @@
     "packages/std-json-api"
   ],
   "scripts": {
-    "build": "npm run build -w packages/std-json-api && npm run build -w packages/nestjs-rest && npm run build -w packages/nestjs-rest-mongodb",
+    "build": "npm run build -w packages/std-json-api && npm run build -w packages/nestjs-rest",
     "watch": "npm run build -w packages/std-json-api && npm run build -w packages/nestjs-rest",
     "demo": "npm start -w packages/demo",
     "test": "tsx --test packages/**/*_test.ts",

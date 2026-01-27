@@ -10,17 +10,19 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
-import {
+import type {
   Attributes,
   JsonApiCollectionDocument,
-  JsonApiCollectionDocumentBuilder,
   JsonApiDocumentBase,
-  JsonApiDocumentBuilder,
-  JsonApiMetaDocumentBuilder,
   JsonApiQuery,
   JsonApiSingleDocument,
   ResourceDescriptor,
   ResourceObject,
+} from "std-json-api";
+import {
+  JsonApiDocumentBuilder,
+  JsonApiCollectionDocumentBuilder,
+  JsonApiMetaDocumentBuilder,
 } from "std-json-api";
 import type { JsonApiAdapter } from "./adapter";
 import { JsonQuery } from "./json-query";
