@@ -1,7 +1,7 @@
 import type {Collection, Document, MatchKeysAndValues} from "mongodb";
 import type {Attributes, JsonApiQuery, JsonApiQueryFilter, ResourceDescriptor} from "std-json-api";
 import {ObjectId,} from "mongodb";
-import {OffsetPipeline} from "./pipelines/offset-pipeline";
+import {OffsetPipeline} from "./offset-pipeline";
 
 export type Doc = Document & Attributes;
 export type InputId = string | string[];

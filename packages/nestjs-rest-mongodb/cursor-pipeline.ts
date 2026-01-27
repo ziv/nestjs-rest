@@ -1,6 +1,6 @@
 import {Document} from "mongodb";
 import {CursorPagination, JsonApiQuery} from "std-json-api/parser";
-import {MongodbAdapterOptions} from "../options";
+import {MongodbAdapterOptions} from "./options";
 
 /**
  * Cursor-based pagination pipeline for MongoDB.

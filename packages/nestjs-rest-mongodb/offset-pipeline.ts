@@ -1,6 +1,6 @@
 import {Document} from "mongodb";
 import {JsonApiQuery, OffsetPagination} from "std-json-api/parser";
-import {MongodbAdapterOptions} from "../options";
+import {MongodbAdapterOptions} from "./options";
 
 /**
  * Offset-based pagination pipeline for MongoDB.
