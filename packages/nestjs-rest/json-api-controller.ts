@@ -23,7 +23,7 @@ import {
   ResourceObject,
 } from "std-json-api";
 import type { JsonApiAdapter } from "./adapter";
-import { JsonQuery } from "./decorators/json-query";
+import { JsonQuery } from "./json-query";
 
 /**
  * Configuration options for the JSON:API controller.
@@ -125,6 +125,7 @@ export class JsonApiController {
    * Returns a 404 Not Found error if the resource doesn't exist.
    *
    * @param id - The resource identifier
+   * @param query
    * @returns Single resource document
    *
    * @see https://jsonapi.org/format/#fetching-resources
@@ -133,8 +134,11 @@ export class JsonApiController {
    */
   @Get(":id")
   @Header("Content-Type", "application/vnd.api+json")
-  async single(@Param("id") id: string): Promise<JsonApiSingleDocument> {
-    const model = await this.options.adapter.single(id);
+  async single(
+    @Param("id") id: string,
+    @JsonQuery() query: JsonApiQuery,
+  ): Promise<JsonApiSingleDocument> {
+    const model = await this.options.adapter.single(id, query);
     if (!model.data) {
       throw new NotFoundException({
         errors: [
@@ -188,6 +192,7 @@ export class JsonApiController {
       })
       .build();
   }
+
   /**
    * Update an existing resource by ID.
    *

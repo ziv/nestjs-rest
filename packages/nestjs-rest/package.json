@@ -4,7 +4,9 @@
   "description": "NestJS REST/CRUD utilities",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p tsconfig-lib.json"
+    "build": "tsc -p tsconfig-lib.json",
+    "test": "tsx --test",
+    "release": "semantic-release"
   },
   "author": "Ziv Perry",
   "license": "MIT",
@@ -37,7 +39,7 @@
     "license"
   ],
   "release": {
-    "extends": "semantic-release-monorepo",
+    "tagFormat": "nestjs-rest-v${version}",
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
@@ -45,11 +47,12 @@
       "@semantic-release/github"
     ]
   },
-  "devDependencies": {
-  },
-  "peerDependencies": {
-
-  },
   "dependencies": {
+    "std-json-api": "*"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.1.12",
+    "@types/express": "^5.0.6",
+    "express": "^5.2.1"
   }
 }

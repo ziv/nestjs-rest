@@ -34,24 +34,10 @@ jobs:
       - name: 🌈 build
         run: npm run build
 
-      #      - name: 🦋release nestjs-rest
-      #        env:
-      #          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      #          NPM_TOKEN: ${{ secrets.NPM_PUBLISH }}
-      #        run: cd packages/nestjs-rest && npx semantic-release
-      #
-      #      - name: 🦋release nestjs-rest-mongodb
-      #        env:
-      #          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      #          NPM_TOKEN: ${{ secrets.NPM_PUBLISH }}
-      #        run: cd packages/nestjs-rest-mongodb && npx semantic-release
-      #
       - name: 🦋release std-json-api
         if: contains(github.event.head_commit.message, '(std-json-api)')
         run: npm run release -w packages/std-json-api
-#
-#      - name: 🦋release std-json-api-client
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-#          NPM_TOKEN: ${{ secrets.NPM_PUBLISH }}
-#        run: cd packages/std-json-api-client && npx semantic-release
+
+      - name: 🦋release nestjs-rest
+        if: contains(github.event.head_commit.message, '(nestjs-rest)')
+        run: npm run release -w packages/nestjs-rest
