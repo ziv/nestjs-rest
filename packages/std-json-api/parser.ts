@@ -98,7 +98,7 @@ export type CursorPagination = { cursor: string; field: string; limit: number };
  * @see https://jsonapi.org/format/#fetching-filtering
  */
 export type JsonApiQueryFilter = {
-    [key: string]: string | string[] | JsonApiQueryFilter;
+    [key: string]: string | string[] | JsonApiQueryFilter | JsonApiQueryFilter[];
 };
 
 /**
@@ -264,12 +264,13 @@ function parsePageParameter(
     // Check for cursor-based pagination
     if ("cursor" in pageObj && typeof pageObj.cursor === "string") {
         const cursor = pageObj.cursor;
+        const field = pageObj.field
         const limit = typeof pageObj.limit === "string"
             ? parseInt(pageObj.limit, 10)
             : undefined;
 
-        if (limit !== undefined && !isNaN(limit)) {
-            return {cursor, limit} as CursorPagination;
+        if (field !== undefined && limit !== undefined && !isNaN(limit)) {
+            return {cursor, limit, field} as CursorPagination;
         }
         // If no valid limit, return just cursor (though technically incomplete)
         return {cursor, limit: 10} as CursorPagination;
@@ -307,22 +308,22 @@ function parsePageParameter(
  * @internal
  */
 function parseFilterParameter(filterObj: ParsedQs): JsonApiQueryFilter {
-    const filter: JsonApiQueryFilter = {};
-
-    for (const [key, value] of Object.entries(filterObj)) {
-        if (typeof value === "string") {
-            // ParsedQs values are always strings when primitive
-            filter[key] = value;
-        } else if (Array.isArray(value)) {
-            // Handle arrays - filter only string values as ParsedQs contains only strings
-            filter[key] = value.filter((v) => typeof v === "string") as string[];
-        } else if (value && typeof value === "object") {
-            // Recursively handle nested ParsedQs objects
-            filter[key] = parseFilterParameter(value);
-        }
-    }
-
-    return filter;
+    // todo currently it works as expected, but we may want to implement type conversions
+    // for (const [key, value] of Object.entries(filterObj)) {
+    //     if (typeof value === "string") {
+    //         // ParsedQs values are always strings when primitive
+    //         filter[key] = value;
+    //     } else if (Array.isArray(value)) {
+    //         // Handle arrays - filter only string values as ParsedQs contains only strings
+    //         filter[key] = value.map(v => parseFilterParameter(v));
+    //     } else if (value && typeof value === "object") {
+    //         // Recursively handle nested ParsedQs objects
+    //         filter[key] = parseFilterParameter(value);
+    //     }
+    // }
+    //
+    // return filter;
+    return filterObj as JsonApiQueryFilter;
 }
 
 /**
