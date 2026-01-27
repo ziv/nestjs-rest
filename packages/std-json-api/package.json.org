@@ -1,23 +1,21 @@
 {
-  "name": "nestjs-rest-mongodb",
+  "name": "std-json-api",
   "version": "0.0.0",
-  "description": "Mongodb adapter for NestJS REST",
+  "description": "JSON-API standard utilities for NestJS",
   "main": "index.js",
+  "types": "types.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig-lib.json"
+    "build": "tsc -p tsconfig-lib.json",
+    "test": "tsx --test"
   },
   "author": "Ziv Perry",
   "license": "MIT",
   "keywords": [
-    "nestjs",
-    "rest",
-    "crud",
-    "resource",
-    "controller",
+    "json",
     "api",
-    "mongodb",
-    "mongo",
-    "adapter"
+    "json-api",
+    "specification",
+    "standard"
   ],
   "engines": {
     "node": ">=20.0.0",
@@ -26,7 +24,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ziv/nestjs-rest.git",
-    "directory": "packages/nestjs-rest-mongodb"
+    "directory": "packages/std-json-api"
   },
   "bugs": {
     "url": "https://github.com/ziv/nestjs-rest/issues"
@@ -47,12 +45,12 @@
       "@semantic-release/github"
     ]
   },
-  "dependencies": {
-    "nestjs-rest": "*",
-    "std-json-api": "*"
-  },
   "devDependencies": {
+    "expect": "^30.0.5",
+    "semantic-release": "^24.2.7",
+    "semantic-release-monorepo": "^8.0.2"
   },
-  "peerDependencies": {
+  "dependencies": {
+    "qs": "^6.14.1"
   }
 }

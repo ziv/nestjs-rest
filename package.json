@@ -11,22 +11,17 @@
     "packages/demo"
   ],
   "scripts": {
-    "build": "npm run build -w packages/std-json-api && npm run build -w packages/std-json-api-client && npm run build -w packages/nestjs-rest && npm run build -w packages/nestjs-rest-mongodb",
+    "build": "npm run build -w packages/std-json-api",
     "watch": "npm run build -w packages/std-json-api && npm run build -w packages/nestjs-rest",
     "demo": "npm start -w packages/demo",
     "test": "tsx --test",
-    "lint": "deno fmt && deno lint",
-    "predocs": "npm run docs --workspaces --if-present"
+    "lint": "deno fmt && deno lint"
   },
   "devDependencies": {
-    "@tsconfig/node22": "^22.0.2",
-    "cz-conventional-changelog": "^3.3.0",
+    "@tsconfig/node24": "^24.0.4",
+    "@types/qs": "^6.14.0",
+    "semantic-release": "^25.0.2",
     "tsx": "^4.20.3",
-    "typedoc": "^0.28.7"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
+    "typescript": "^5.9.3"
   }
 }

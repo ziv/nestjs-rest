@@ -1,63 +1,71 @@
-import type {JsonApiQuery} from "std-json-api/query-string-parser";
-import {AttributesObject, CollectionResourceDocument, SingleResourceDocument} from "std-json-api/json-api";
+import { Attributes, Meta } from "std-json-api/json-api";
+import { JsonApiQuery } from "std-json-api/parser";
 
 export type CreateResponse = {
-    meta: {
-        created: boolean;
-        id: string;
-    };
+  meta: {
+    created: boolean;
+    id: string;
+  };
 };
 
 export type UpdateResponse = {
-    meta: {
-        id: string;
-        updated: boolean;
-    };
+  meta: {
+    id: string;
+    updated: boolean;
+  };
 };
 
 export type RemoveResponse = {
-    meta: {
-        id: string;
-        deleted: boolean;
-    };
+  meta: {
+    id: string;
+    deleted: boolean;
+  };
 };
 
-export default interface JsonApiAdapter<
-    Model extends AttributesObject = AttributesObject,
-> {
-    /**
-     * Create a new resource document and return metadata.
-     *
-     * @param data
-     */
-    create<R = Model>(data: R): Promise<CreateResponse>;
+export type SingleResponse<Model extends Attributes = Attributes> = {
+  data: Model | null;
+  meta?: Meta;
+};
 
-    /**
-     * Fetch multiple records of a specific resource.
-     *
-     * @param input
-     */
-    multiple(input: JsonApiQuery): Promise<CollectionResourceDocument>;
+export type MultipleResponse<Model extends Attributes = Attributes> = {
+  data: Model[];
+  meta?: Meta;
+};
 
-    /**
-     * Fetch a single record of a specific resource by ID.
-     *
-     * @param id
-     */
-    single(id: string): Promise<SingleResourceDocument>;
+export interface JsonApiAdapter<Model extends Attributes = Attributes> {
+  /**
+   * Create a new resource document and return metadata.
+   *
+   * @param data
+   */
+  create<R = Model>(data: R): Promise<CreateResponse>;
 
-    /**
-     * Update a resource document by ID and return metadata.
-     *
-     * @param id
-     * @param data
-     */
-    update<R = Model>(id: string, data: Partial<R>): Promise<UpdateResponse>;
+  /**
+   * Fetch multiple records of a specific resource.
+   *
+   * @param input
+   */
+  multiple(input: JsonApiQuery): Promise<MultipleResponse<Model>>;
 
-    /**
-     * Delete a resource document by ID and return metadata.
-     *
-     * @param id
-     */
-    remove(id: string): Promise<RemoveResponse>;
+  /**
+   * Fetch a single record of a specific resource by ID.
+   *
+   * @param id
+   */
+  single(id: string): Promise<SingleResponse<Model>>;
+
+  /**
+   * Update a resource document by ID and return metadata.
+   *
+   * @param id
+   * @param data
+   */
+  update<R = Model>(id: string, data: Partial<R>): Promise<UpdateResponse>;
+
+  /**
+   * Delete a resource document by ID and return metadata.
+   *
+   * @param id
+   */
+  remove(id: string): Promise<RemoveResponse>;
 }

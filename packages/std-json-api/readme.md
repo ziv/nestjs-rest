@@ -1,15 +1,16 @@
 # std-json-api
 
-Functional standard `JSON:API` serializers, schemas, and utilities for building `JSON:API` compliant applications.
+Functional standard `JSON:API` serializers, schemas, and utilities for building
+`JSON:API` compliant applications.
 
 ## Types & Schemas
 
-All types are exported from `std-api`.
-Each type has a `zod` schema that can be used to validate the data structure.
+All types are exported from `std-api`. Each type has a `zod` schema that can be
+used to validate the data structure.
 
 ```typescript
-import type {MetaObject} from 'std-json-api/std-api';
-import type {metaObject} from 'std-json-api/schemas/meta-object';
+import type { MetaObject } from "std-json-api/std-api";
+import type { metaObject } from "std-json-api/schemas/meta-object";
 
 // validate a meta object example
 metaObject.parse({});
@@ -17,17 +18,16 @@ metaObject.parse({});
 
 ## ResourceDescriptor
 
-A utility to describe a `JSON:API` resource with its attributes and relationships.
+A utility to describe a `JSON:API` resource with its attributes and
+relationships.
 
 ```typescript
-import Describe from 'std-json-api/descriptor';
+import Describe from "std-json-api/descriptor";
 
-const desc = Describe('resource-id')
-    .addAttr('name', 'string')
-    .addReleationship('related-resource', 'related-type', 'related-id')
-    .build();
-
-
+const desc = Describe("resource-id")
+  .addAttr("name", "string")
+  .addReleationship("related-resource", "related-type", "related-id")
+  .build();
 ```
 
 ## Functional Builder API
@@ -69,6 +69,4 @@ const doc = JsonApiBuilder
                 ...
             })
     )
-
 ```
-
