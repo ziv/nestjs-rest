@@ -7,11 +7,6 @@ A [`JSON:API`](https://jsonapi.org/) compliant REST controller for
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
-# Example
-
-    docker build -t nestjs-rest:1.0 .
-    docker run -p 3001:3001 --name example-nestjs-rest nestjs-rest:1.0
-
 # Overview
 
 This project bring the `JSON:API` specification to the `NestJS` framework,
@@ -21,7 +16,7 @@ sorting, pagination, filtering, and more.
 ## Contents
 
 | Package Name                                            | Description                                                                               |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+|---------------------------------------------------------|-------------------------------------------------------------------------------------------|
 | [`std-json-api`](./packages/std-json-api)               | Standard JSON:API implementation, providing the core functionality of document structure. |
 | [`std-json-api-client`](./packages/std-json-api-client) | Isomorphic HTTP/JSON:API client.                                                          |
 | [`nestjs-rest`](./packages/nestjs-rest)                 | NestJS controller that implements the JSON:API specification.                             |
@@ -37,14 +32,14 @@ sorting, pagination, filtering, and more.
 There are two pagination strategies supported by this project:
 
 | Pagination Strategy     | Status | Description                                                                                          |
-| ----------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
+|-------------------------|--------|------------------------------------------------------------------------------------------------------|
 | Offset-based pagination | ✈️     | Default pagination strategy using offset and limit query parameters.                                 |
 | Cursor-based pagination | 🚫     | Pagination strategy using cursor to provide a more efficient way to paginate through large datasets. |
 
 ### Implementation Report
 
 | Spec                | Subject    | Status | Reference                                       |
-| ------------------- | ---------- | ------ | ----------------------------------------------- |
+|---------------------|------------|--------|-------------------------------------------------|
 | content-negotiation |            | 🚧     | https://jsonapi.org/format/#content-negotiation |
 | document structure  |            | ✈️     | https://jsonapi.org/format/#document-structure  |
 | fetching data       |            | ✈️     | https://jsonapi.org/format/#fetching            |
@@ -59,7 +54,7 @@ There are two pagination strategies supported by this project:
 ### Adapters Implementation Report
 
 | Adapter | Status | Description                                                    | Readme                                             |
-| ------- | ------ | -------------------------------------------------------------- | -------------------------------------------------- |
+|---------|--------|----------------------------------------------------------------|----------------------------------------------------|
 | Mongodb | ✈️     | Simple (without relationships) adapter for Mongodb collection. | [readme](./packages/nestjs-rest-mongodb/readme.md) |
 
 ---
