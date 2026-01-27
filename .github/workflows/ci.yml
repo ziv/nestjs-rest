@@ -19,12 +19,13 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - name: ⛵️ checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: ☂️ setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
+          cache: npm
 
       - name: 🔑 dependencies
         run: npm ci --no-fund
