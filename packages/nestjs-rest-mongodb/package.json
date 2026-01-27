@@ -50,11 +50,9 @@
       "@semantic-release/github"
     ]
   },
-  "dependencies": {
-    "nestjs-rest": "^0.7.0",
-    "std-json-api": "^1.6.0"
-  },
   "peerDependencies": {
+    "nestjs-rest": "^0.0.0",
+    "std-json-api": "^0.0.0",
     "mongodb": ">=6.0.0"
   }
 }
