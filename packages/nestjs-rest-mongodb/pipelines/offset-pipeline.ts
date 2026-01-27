@@ -36,8 +36,8 @@ export function OffsetPipeline(options: MongodbAdapterOptions<any>, query: JsonA
 
     // stage 4: pagination and count
     const page = query.page as OffsetPagination;
-    const offset = page.offset ?? 0;
-    const limit = page.limit ?? 10;
+    const offset = page?.offset ?? 0;
+    const limit = page?.limit ?? 10;
 
     pipeline.push({
         $facet: {
