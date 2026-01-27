@@ -1,4 +1,4 @@
-import qs, { type ParsedQs } from "qs";
+import qs, {type ParsedQs} from "qs";
 
 /**
  * Sorting fields for JSON API query.
@@ -71,7 +71,7 @@ export type OffsetPagination = { offset: number; limit: number };
  *
  * @see https://jsonapi.org/format/#fetching-pagination
  */
-export type CursorPagination = { cursor: string; limit: number };
+export type CursorPagination = { cursor: string; field: string; limit: number };
 
 /**
  * Filter parameters for JSON API query.
@@ -98,7 +98,7 @@ export type CursorPagination = { cursor: string; limit: number };
  * @see https://jsonapi.org/format/#fetching-filtering
  */
 export type JsonApiQueryFilter = {
-  [key: string]: string | string[] | JsonApiQueryFilter;
+    [key: string]: string | string[] | JsonApiQueryFilter;
 };
 
 /**
@@ -116,13 +116,13 @@ export type JsonApiQueryFilter = {
  * @see https://jsonapi.org/format/#fetching
  */
 export type JsonApiQuery = {
-  sort?: JsonApiQuerySorting;
-  page?: OffsetPagination | CursorPagination;
-  filter?: JsonApiQueryFilter;
-  fields?: JsonApiQueryFields;
-  include?: string[];
-  // Additional custom query parameters
-  [key: string]: unknown;
+    sort?: JsonApiQuerySorting;
+    page?: OffsetPagination | CursorPagination;
+    filter?: JsonApiQueryFilter;
+    fields?: JsonApiQueryFields;
+    include?: string[];
+    // Additional custom query parameters
+    [key: string]: unknown;
 };
 
 /**
@@ -162,53 +162,53 @@ export type JsonApiQuery = {
  * @see https://jsonapi.org/format/#fetching
  */
 export function parser(searchString: string): JsonApiQuery {
-  // Parse the query string using qs library
-  const parsed = qs.parse(searchString, {
-    depth: 10,
-    parameterLimit: 1000,
-    allowDots: false,
-  }) as ParsedQs;
+    // Parse the query string using qs library
+    const parsed = qs.parse(searchString, {
+        depth: 10,
+        parameterLimit: 1000,
+        allowDots: false,
+    }) as ParsedQs;
 
-  const result: JsonApiQuery = {};
+    const result: JsonApiQuery = {};
 
-  // Parse sort parameter
-  // Format: sort=-created,title (descending created, ascending title)
-  if (typeof parsed.sort === "string") {
-    result.sort = parseSortParameter(parsed.sort);
-  }
-
-  // Parse page parameters
-  // Supports both offset and cursor-based pagination
-  if (parsed.page && typeof parsed.page === "object") {
-    result.page = parsePageParameter(parsed.page as ParsedQs);
-  }
-
-  // Parse filter parameters
-  // Format: filter[field]=value or nested structures
-  if (parsed.filter && typeof parsed.filter === "object") {
-    result.filter = parseFilterParameter(parsed.filter as ParsedQs);
-  }
-
-  // Parse fields parameters (sparse fieldsets)
-  // Format: fields[articles]=title,body&fields[people]=name
-  if (parsed.fields && typeof parsed.fields === "object") {
-    result.fields = parseFieldsParameter(parsed.fields as ParsedQs);
-  }
-
-  // Parse include parameter
-  // Format: include=author,comments.author (relationship paths)
-  if (typeof parsed.include === "string") {
-    result.include = parseIncludeParameter(parsed.include);
-  }
-
-  // Include any other custom query parameters
-  for (const [key, value] of Object.entries(parsed)) {
-    if (!["sort", "page", "filter", "fields", "include"].includes(key)) {
-      result[key] = value;
+    // Parse sort parameter
+    // Format: sort=-created,title (descending created, ascending title)
+    if (typeof parsed.sort === "string") {
+        result.sort = parseSortParameter(parsed.sort);
     }
-  }
 
-  return result;
+    // Parse page parameters
+    // Supports both offset and cursor-based pagination
+    if (parsed.page && typeof parsed.page === "object") {
+        result.page = parsePageParameter(parsed.page as ParsedQs);
+    }
+
+    // Parse filter parameters
+    // Format: filter[field]=value or nested structures
+    if (parsed.filter && typeof parsed.filter === "object") {
+        result.filter = parseFilterParameter(parsed.filter as ParsedQs);
+    }
+
+    // Parse fields parameters (sparse fieldsets)
+    // Format: fields[articles]=title,body&fields[people]=name
+    if (parsed.fields && typeof parsed.fields === "object") {
+        result.fields = parseFieldsParameter(parsed.fields as ParsedQs);
+    }
+
+    // Parse include parameter
+    // Format: include=author,comments.author (relationship paths)
+    if (typeof parsed.include === "string") {
+        result.include = parseIncludeParameter(parsed.include);
+    }
+
+    // Include any other custom query parameters
+    for (const [key, value] of Object.entries(parsed)) {
+        if (!["sort", "page", "filter", "fields", "include"].includes(key)) {
+            result[key] = value;
+        }
+    }
+
+    return result;
 }
 
 /**
@@ -226,22 +226,22 @@ export function parser(searchString: string): JsonApiQuery {
  * @internal
  */
 function parseSortParameter(sortString: string): JsonApiQuerySorting {
-  const sorting: JsonApiQuerySorting = {};
+    const sorting: JsonApiQuerySorting = {};
 
-  // Split by comma and process each field
-  const fields = sortString.split(",").map((s) => s.trim()).filter(Boolean);
+    // Split by comma and process each field
+    const fields = sortString.split(",").map((s) => s.trim()).filter(Boolean);
 
-  for (const field of fields) {
-    if (field.startsWith("-")) {
-      // Descending order
-      sorting[field.substring(1)] = -1;
-    } else {
-      // Ascending order
-      sorting[field] = 1;
+    for (const field of fields) {
+        if (field.startsWith("-")) {
+            // Descending order
+            sorting[field.substring(1)] = -1;
+        } else {
+            // Ascending order
+            sorting[field] = 1;
+        }
     }
-  }
 
-  return sorting;
+    return sorting;
 }
 
 /**
@@ -259,37 +259,37 @@ function parseSortParameter(sortString: string): JsonApiQuerySorting {
  * @internal
  */
 function parsePageParameter(
-  pageObj: ParsedQs,
+    pageObj: ParsedQs,
 ): OffsetPagination | CursorPagination | undefined {
-  // Check for cursor-based pagination
-  if ("cursor" in pageObj && typeof pageObj.cursor === "string") {
-    const cursor = pageObj.cursor;
-    const limit = typeof pageObj.limit === "string"
-      ? parseInt(pageObj.limit, 10)
-      : undefined;
+    // Check for cursor-based pagination
+    if ("cursor" in pageObj && typeof pageObj.cursor === "string") {
+        const cursor = pageObj.cursor;
+        const limit = typeof pageObj.limit === "string"
+            ? parseInt(pageObj.limit, 10)
+            : undefined;
 
-    if (limit !== undefined && !isNaN(limit)) {
-      return { cursor, limit };
+        if (limit !== undefined && !isNaN(limit)) {
+            return {cursor, limit} as CursorPagination;
+        }
+        // If no valid limit, return just cursor (though technically incomplete)
+        return {cursor, limit: 10} as CursorPagination;
     }
-    // If no valid limit, return just cursor (though technically incomplete)
-    return { cursor, limit: 10 }; // Default limit
-  }
 
-  // Check for offset-based pagination
-  if ("offset" in pageObj || "limit" in pageObj) {
-    const offset = typeof pageObj.offset === "string"
-      ? parseInt(pageObj.offset, 10)
-      : 0;
-    const limit = typeof pageObj.limit === "string"
-      ? parseInt(pageObj.limit, 10)
-      : 10;
+    // Check for offset-based pagination
+    if ("offset" in pageObj || "limit" in pageObj) {
+        const offset = typeof pageObj.offset === "string"
+            ? parseInt(pageObj.offset, 10)
+            : 0;
+        const limit = typeof pageObj.limit === "string"
+            ? parseInt(pageObj.limit, 10)
+            : 10;
 
-    if (!isNaN(offset) && !isNaN(limit)) {
-      return { offset, limit };
+        if (!isNaN(offset) && !isNaN(limit)) {
+            return {offset, limit} as OffsetPagination;
+        }
     }
-  }
 
-  return undefined;
+    return undefined;
 }
 
 /**
@@ -307,22 +307,22 @@ function parsePageParameter(
  * @internal
  */
 function parseFilterParameter(filterObj: ParsedQs): JsonApiQueryFilter {
-  const filter: JsonApiQueryFilter = {};
+    const filter: JsonApiQueryFilter = {};
 
-  for (const [key, value] of Object.entries(filterObj)) {
-    if (typeof value === "string") {
-      // ParsedQs values are always strings when primitive
-      filter[key] = value;
-    } else if (Array.isArray(value)) {
-      // Handle arrays - filter only string values as ParsedQs contains only strings
-      filter[key] = value.filter((v) => typeof v === "string") as string[];
-    } else if (value && typeof value === "object") {
-      // Recursively handle nested ParsedQs objects
-      filter[key] = parseFilterParameter(value);
+    for (const [key, value] of Object.entries(filterObj)) {
+        if (typeof value === "string") {
+            // ParsedQs values are always strings when primitive
+            filter[key] = value;
+        } else if (Array.isArray(value)) {
+            // Handle arrays - filter only string values as ParsedQs contains only strings
+            filter[key] = value.filter((v) => typeof v === "string") as string[];
+        } else if (value && typeof value === "object") {
+            // Recursively handle nested ParsedQs objects
+            filter[key] = parseFilterParameter(value);
+        }
     }
-  }
 
-  return filter;
+    return filter;
 }
 
 /**
@@ -340,23 +340,23 @@ function parseFilterParameter(filterObj: ParsedQs): JsonApiQueryFilter {
  * @internal
  */
 function parseFieldsParameter(fieldsObj: ParsedQs): JsonApiQueryFields {
-  const fields: JsonApiQueryFields = {};
+    const fields: JsonApiQueryFields = {};
 
-  for (const [resourceType, fieldList] of Object.entries(fieldsObj)) {
-    if (typeof fieldList === "string") {
-      // Split comma-separated fields and mark each as included (1)
-      const fieldNames = fieldList.split(",").map((f) => f.trim()).filter(
-        Boolean,
-      );
-      fields[resourceType] = {};
+    for (const [resourceType, fieldList] of Object.entries(fieldsObj)) {
+        if (typeof fieldList === "string") {
+            // Split comma-separated fields and mark each as included (1)
+            const fieldNames = fieldList.split(",").map((f) => f.trim()).filter(
+                Boolean,
+            );
+            fields[resourceType] = {};
 
-      for (const fieldName of fieldNames) {
-        fields[resourceType][fieldName] = 1;
-      }
+            for (const fieldName of fieldNames) {
+                fields[resourceType][fieldName] = 1;
+            }
+        }
     }
-  }
 
-  return fields;
+    return fields;
 }
 
 /**
@@ -374,8 +374,8 @@ function parseFieldsParameter(fieldsObj: ParsedQs): JsonApiQueryFields {
  * @internal
  */
 function parseIncludeParameter(includeString: string): string[] {
-  return includeString
-    .split(",")
-    .map((path) => path.trim())
-    .filter(Boolean);
+    return includeString
+        .split(",")
+        .map((path) => path.trim())
+        .filter(Boolean);
 }

@@ -4,6 +4,9 @@
     "paths": {
       "std-json-api/*": [
         "./packages/std-json-api/*"
+      ],
+      "nestjs-rest/*": [
+        "./packages/nestjs-rest/*"
       ]
     }
   }
