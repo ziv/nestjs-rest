@@ -51,8 +51,8 @@
     ]
   },
   "dependencies": {
-    "nestjs-rest": "*",
-    "std-json-api": "*"
+    "nestjs-rest": "^0.7.0",
+    "std-json-api": "^1.6.0"
   },
   "peerDependencies": {
     "mongodb": ">=6.0.0"
