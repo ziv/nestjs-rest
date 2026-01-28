@@ -8,4 +8,3 @@ Support multiple pipelines:
 
 - Offset pagination
 - Cursor pagination
-
