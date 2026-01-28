@@ -874,12 +874,13 @@ export type JsonApiDocument =
  * An attribute or relationship type for a JSON:API resource.
  */
 export type AttributeType =
+  | "boolean"
   | "string"
   | "number"
   | "date"
   | "object"
   | "array"
-  | "unknown"; //  typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof Object | typeof Function | typeof Symbol | string;
+  | "unknown";
 
 /**
  * A mapping of attribute names to their types.
