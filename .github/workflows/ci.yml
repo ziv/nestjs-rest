@@ -37,7 +37,7 @@ jobs:
         run: npm test
 
       - name: 🌈 build
-        run: npm run build && npm run update
+        run: npm run build
 
       - name: 🦋release std-json-api
         if: contains(github.event.head_commit.message, '(std-json-api)')
