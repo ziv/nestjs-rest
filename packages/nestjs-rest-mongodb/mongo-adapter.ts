@@ -1,14 +1,14 @@
 import {debuglog} from 'node:util';
 import type {MatchKeysAndValues, OptionalUnlessRequiredId,} from "mongodb";
-import {JsonApiQuery} from "std-json-api";
-import type {
+import {
     CreateResponse,
     JsonApiAdapter,
+    JsonApiQuery,
     MultipleResponse,
     RemoveResponse,
     SingleResponse,
     UpdateResponse
-} from "nestjs-rest";
+} from "std-json-api";
 import {Doc, InputId, MongodbAdapterOptions, normalize} from "./options";
 
 const log = debuglog("nestjs-rest-mongodb");

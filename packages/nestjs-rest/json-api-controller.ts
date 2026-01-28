@@ -21,11 +21,11 @@ import type {
   ResourceObject,
 } from "std-json-api";
 import {
+  JsonApiAdapter,
   JsonApiDocumentBuilder,
   JsonApiCollectionDocumentBuilder,
   JsonApiMetaDocumentBuilder,
 } from "std-json-api";
-import type { JsonApiAdapter } from "./adapter";
 import { JsonQuery } from "./json-query";
 
 const log = debuglog("nestjs-rest");
