@@ -28,18 +28,19 @@ format([reference](./packages/std-json-api/specs.md)).
 
 ### Implementation Report
 
-| Spec                | Subject    | Status | Reference                                       |
-|---------------------|------------|--------|-------------------------------------------------|
-| content-negotiation |            | 🚧     | https://jsonapi.org/format/#content-negotiation |
-| document structure  |            | ✈️     | https://jsonapi.org/format/#document-structure  |
-| fetching data       |            | ✈️     | https://jsonapi.org/format/#fetching            |
-|                     | sorting    | ✈️     | https://jsonapi.org/format/#fetching-sorting    |
-|                     | pagination | ✈️     | https://jsonapi.org/format/#fetching-pagination |
-|                     | filtering  | ✈️     | https://jsonapi.org/format/#fetching-filtering  |
-| crud                |            | ✈️     | https://jsonapi.org/format/#crud                |
-| query parameters    |            | ✈️     | https://jsonapi.org/format/#query-parameters    |
-| errors              |            | 🚧     | https://jsonapi.org/format/#errors              |
-| extensions          |            | 🚧     | https://jsonapi.org/extensions/                 |
+| Spec                | Subject    | Status | Reference                                          |
+|---------------------|------------|--------|----------------------------------------------------|
+| content-negotiation |            | 🚧     | https://jsonapi.org/format/#content-negotiation    |
+| document structure  |            | ✈️     | https://jsonapi.org/format/#document-structure     |
+| fetching data       |            | ✈️     | https://jsonapi.org/format/#fetching               |
+|                     | sorting    | ✈️     | https://jsonapi.org/format/#fetching-sorting       |
+|                     | pagination | ✈️     | https://jsonapi.org/format/#fetching-pagination    |
+|                     | filtering  | ✈️     | https://jsonapi.org/format/#fetching-filtering     |
+|                     | relations  | 🚧     | https://jsonapi.org/format/#fetching-relationships |
+| crud                |            | ✈️     | https://jsonapi.org/format/#crud                   |
+| query parameters    |            | ✈️     | https://jsonapi.org/format/#query-parameters       |
+| errors              |            | 🚧     | https://jsonapi.org/format/#errors                 |
+| extensions          |            | 🚧     | https://jsonapi.org/extensions/                    |
 
 ### Pagination Strategies
 
