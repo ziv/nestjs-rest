@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "JSON-API standard utilities for NestJS",
   "main": "index.js",
-  "types": "types.d.ts",
+  "types": "index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig-lib.json",
     "test": "tsx --test",
