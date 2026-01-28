@@ -1,6 +1,8 @@
 import {
+    ErrorObject,
     JsonApiCollectionDocument,
     JsonApiDocumentBase,
+    JsonApiErrorDocument,
     JsonApiSingleDocument,
     ResourceObject,
 } from "./json-api";
@@ -298,7 +300,7 @@ export class JsonApiResourceBuilder {
      * ```
      */
     build(): ResourceObject {
-        return this.resource;
+        return structuredClone(this.resource);
     }
 }
 
@@ -307,6 +309,114 @@ export class JsonApiResourceBuilder {
  */
 export class JsonApiMetaDocumentBuilder
     extends JsonApiBaseBuilder<JsonApiDocumentBase> {
+}
+
+/**
+ * Builder for JSON:API error documents.
+ *
+ * Used to construct documents that contain one or more error objects.
+ * This is typically used for:
+ * - Validation errors (422)
+ * - Not found errors (404)
+ * - Authorization errors (401, 403)
+ * - Server errors (500)
+ *
+ * Note: Error documents MUST NOT contain a `data` member.
+ *
+ * @example
+ * ```ts
+ * const document = new JsonApiErrorDocumentBuilder()
+ *   .errors([
+ *     {
+ *       status: "422",
+ *       code: "VALIDATION_ERROR",
+ *       title: "Validation Failed",
+ *       detail: "Title must be at least 3 characters long",
+ *       source: { pointer: "/data/attributes/title" }
+ *     }
+ *   ])
+ *   .build();
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Using the error() method to add errors one at a time
+ * const document = new JsonApiErrorDocumentBuilder()
+ *   .error({
+ *     status: "404",
+ *     title: "Not Found",
+ *     detail: "Article with id '123' does not exist"
+ *   })
+ *   .build();
+ * ```
+ *
+ * @see https://jsonapi.org/format/#errors
+ * @see https://jsonapi.org/format/#error-objects
+ */
+export class JsonApiErrorDocumentBuilder
+    extends JsonApiBaseBuilder<JsonApiErrorDocument> {
+    /**
+     * Sets all errors for the document.
+     *
+     * Replaces any existing errors with the provided array.
+     *
+     * @param errors - Array of error objects
+     * @returns The builder instance for method chaining
+     *
+     * @example
+     * ```ts
+     * builder.errors([
+     *   {
+     *     status: "422",
+     *     title: "Validation Failed",
+     *     detail: "Title is required",
+     *     source: { pointer: "/data/attributes/title" }
+     *   },
+     *   {
+     *     status: "422",
+     *     title: "Validation Failed",
+     *     detail: "Email is invalid",
+     *     source: { pointer: "/data/attributes/email" }
+     *   }
+     * ]);
+     * ```
+     */
+    errors(errors: ErrorObject[]): this {
+        this.doc.errors = errors;
+        return this;
+    }
+
+    /**
+     * Adds a single error to the document.
+     *
+     * Appends the error to the existing errors array, or creates
+     * a new array if none exists.
+     *
+     * @param error - The error object to add
+     * @returns The builder instance for method chaining
+     *
+     * @example
+     * ```ts
+     * builder
+     *   .error({
+     *     status: "400",
+     *     title: "Bad Request",
+     *     detail: "Invalid JSON in request body"
+     *   })
+     *   .error({
+     *     status: "400",
+     *     title: "Bad Request",
+     *     detail: "Missing required header"
+     *   });
+     * ```
+     */
+    error(error: ErrorObject): this {
+        if (!this.doc.errors) {
+            this.doc.errors = [];
+        }
+        this.doc.errors.push(error);
+        return this;
+    }
 }
 
 /**

@@ -4,9 +4,11 @@ import {
   JsonApiBaseBuilder,
   JsonApiCollectionDocumentBuilder,
   JsonApiDocumentBuilder,
+  JsonApiErrorDocumentBuilder,
   JsonApiResourceBuilder,
 } from "./builder";
 import {
+  ErrorObject,
   JsonApiDocumentBase,
   ResourceIdentifierObject,
   ResourceObject,
@@ -1150,6 +1152,210 @@ describe("JsonApiCollectionDocumentBuilder", () => {
       expect(doc.data).toHaveLength(2);
       expect(doc.meta?.filter).toEqual({ inStock: true });
       expect(doc.meta?.sort).toBe("-price");
+    });
+  });
+});
+
+describe("JsonApiErrorDocumentBuilder", () => {
+  describe("errors", () => {
+    it("should set errors array", () => {
+      const errors: ErrorObject[] = [
+        {
+          status: "422",
+          code: "VALIDATION_ERROR",
+          title: "Validation Failed",
+          detail: "Title must be at least 3 characters long",
+          source: { pointer: "/data/attributes/title" },
+        },
+      ];
+
+      const doc = new JsonApiErrorDocumentBuilder().errors(errors).build();
+
+      expect(doc.errors).toEqual(errors);
+      expect(doc.jsonapi).toEqual({ version: "1.0" });
+    });
+
+    it("should set multiple errors", () => {
+      const errors: ErrorObject[] = [
+        {
+          status: "422",
+          title: "Validation Failed",
+          detail: "Title is required",
+          source: { pointer: "/data/attributes/title" },
+        },
+        {
+          status: "422",
+          title: "Validation Failed",
+          detail: "Email is invalid",
+          source: { pointer: "/data/attributes/email" },
+        },
+      ];
+
+      const doc = new JsonApiErrorDocumentBuilder().errors(errors).build();
+
+      expect(doc.errors).toHaveLength(2);
+      expect(doc.errors[0].detail).toBe("Title is required");
+      expect(doc.errors[1].detail).toBe("Email is invalid");
+    });
+
+    it("should replace existing errors", () => {
+      const doc = new JsonApiErrorDocumentBuilder()
+        .errors([{ status: "400", title: "Bad Request" }])
+        .errors([{ status: "500", title: "Server Error" }])
+        .build();
+
+      expect(doc.errors).toHaveLength(1);
+      expect(doc.errors[0].status).toBe("500");
+    });
+  });
+
+  describe("error", () => {
+    it("should add a single error", () => {
+      const doc = new JsonApiErrorDocumentBuilder()
+        .error({
+          status: "404",
+          title: "Not Found",
+          detail: "Article with id '123' does not exist",
+        })
+        .build();
+
+      expect(doc.errors).toHaveLength(1);
+      expect(doc.errors[0].status).toBe("404");
+    });
+
+    it("should append errors when called multiple times", () => {
+      const doc = new JsonApiErrorDocumentBuilder()
+        .error({
+          status: "400",
+          title: "Bad Request",
+          detail: "Invalid JSON",
+        })
+        .error({
+          status: "400",
+          title: "Bad Request",
+          detail: "Missing header",
+        })
+        .build();
+
+      expect(doc.errors).toHaveLength(2);
+      expect(doc.errors[0].detail).toBe("Invalid JSON");
+      expect(doc.errors[1].detail).toBe("Missing header");
+    });
+
+    it("should work with errors() method", () => {
+      const doc = new JsonApiErrorDocumentBuilder()
+        .errors([{ status: "422", title: "Validation Error" }])
+        .error({ status: "422", title: "Another Error" })
+        .build();
+
+      expect(doc.errors).toHaveLength(2);
+    });
+  });
+
+  describe("with metadata and links", () => {
+    it("should support metadata", () => {
+      const doc = new JsonApiErrorDocumentBuilder()
+        .error({ status: "500", title: "Server Error" })
+        .metadata({ requestId: "abc-123", timestamp: "2024-01-15T10:00:00Z" })
+        .build();
+
+      expect(doc.meta).toEqual({
+        requestId: "abc-123",
+        timestamp: "2024-01-15T10:00:00Z",
+      });
+    });
+
+    it("should support links", () => {
+      const doc = new JsonApiErrorDocumentBuilder()
+        .error({
+          status: "401",
+          title: "Unauthorized",
+          links: {
+            about: "https://api.example.com/docs/errors/401",
+          },
+        })
+        .links({ self: "/articles/1" })
+        .build();
+
+      expect(doc.links).toEqual({ self: "/articles/1" });
+    });
+  });
+
+  describe("real-world examples", () => {
+    it("should build validation error document", () => {
+      const doc = new JsonApiErrorDocumentBuilder()
+        .errors([
+          {
+            id: "err-001",
+            status: "422",
+            code: "VALIDATION_ERROR",
+            title: "Invalid Attribute",
+            detail: "Title must be between 3 and 100 characters",
+            source: { pointer: "/data/attributes/title" },
+          },
+          {
+            id: "err-002",
+            status: "422",
+            code: "VALIDATION_ERROR",
+            title: "Invalid Attribute",
+            detail: "Email format is invalid",
+            source: { pointer: "/data/attributes/email" },
+          },
+        ])
+        .metadata({ errorCount: 2 })
+        .build();
+
+      expect(doc.errors).toHaveLength(2);
+      expect(doc.meta?.errorCount).toBe(2);
+    });
+
+    it("should build not found error document", () => {
+      const doc = new JsonApiErrorDocumentBuilder()
+        .error({
+          status: "404",
+          code: "RESOURCE_NOT_FOUND",
+          title: "Resource Not Found",
+          detail: "The requested article could not be found",
+          links: {
+            about: "https://api.example.com/docs/errors#not-found",
+          },
+        })
+        .build();
+
+      expect(doc.errors[0].status).toBe("404");
+      expect(doc.errors[0].code).toBe("RESOURCE_NOT_FOUND");
+    });
+
+    it("should build authorization error document", () => {
+      const doc = new JsonApiErrorDocumentBuilder()
+        .error({
+          status: "403",
+          code: "FORBIDDEN",
+          title: "Forbidden",
+          detail: "You do not have permission to access this resource",
+          meta: {
+            requiredRole: "admin",
+            currentRole: "user",
+          },
+        })
+        .build();
+
+      expect(doc.errors[0].status).toBe("403");
+      expect(doc.errors[0].meta?.requiredRole).toBe("admin");
+    });
+
+    it("should build query parameter error document", () => {
+      const doc = new JsonApiErrorDocumentBuilder()
+        .error({
+          status: "400",
+          code: "INVALID_QUERY_PARAMETER",
+          title: "Invalid Query Parameter",
+          detail: "The 'page[limit]' parameter must be a positive integer",
+          source: { parameter: "page[limit]" },
+        })
+        .build();
+
+      expect(doc.errors[0].source?.parameter).toBe("page[limit]");
     });
   });
 });
