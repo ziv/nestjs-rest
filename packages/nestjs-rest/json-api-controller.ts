@@ -111,7 +111,7 @@ export class JsonApiController {
   async multiple(
     @JsonQuery() query: JsonApiQuery,
   ): Promise<JsonApiCollectionDocument> {
-    console.log('>>>', query);
+    log("Fetching multiple resources with query:", query);
     const result = await this.options.adapter.multiple(query);
     const resources = result.data.map((model) =>
       this.transformModelToResource(model)
@@ -144,6 +144,7 @@ export class JsonApiController {
     @Param("id") id: string,
     @JsonQuery() query: JsonApiQuery,
   ): Promise<JsonApiSingleDocument> {
+    log(`Fetching single resource with id: ${id} and query:`, query);
     const model = await this.options.adapter.single(id, query);
     if (!model.data) {
       throw new NotFoundException({
