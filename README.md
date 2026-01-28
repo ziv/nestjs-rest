@@ -10,30 +10,21 @@ A [`JSON:API`](https://jsonapi.org/) compliant REST controller for
 # Overview
 
 This project bring the `JSON:API` specification to the `NestJS` framework,
-providing almost _zero-config_ REST controller that supports CRUD operations,
-sorting, pagination, filtering, and more.
+providing zero code REST controller that supports CRUD operations,
+sorting, pagination, filtering, and more using simple configurations.
 
 ## Contents
 
-| Package Name                                            | Version                                                          | Description                                                                              |
-|---------------------------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| [`std-json-api`](./packages/std-json-api)               | ![NPM Version](https://img.shields.io/npm/v/std-json-api)        | Standard JSON:API implementation, providing the core functionality of document structure |
-| [`nestjs-rest`](./packages/nestjs-rest)                 | ![NPM Version](https://img.shields.io/npm/v/nestjs-rest)         | NestJS controller that implements the JSON:API                                           |                     
-| [`nestjs-rest-mongodb`](./packages/nestjs-rest-mongodb) | ![NPM Version](https://img.shields.io/npm/v/nestjs-rest-mongodb) | MongoDB adapter for `nestjs-rest`                                                        |                     
+| Package Name                                            | Version                                                          | Description                                                                                |
+|---------------------------------------------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| [`std-json-api`](./packages/std-json-api)               | ![NPM Version](https://img.shields.io/npm/v/std-json-api)        | Standard `JSON:API` implementation, providing the core functionality of document structure |
+| [`nestjs-rest`](./packages/nestjs-rest)                 | ![NPM Version](https://img.shields.io/npm/v/nestjs-rest)         | NestJS controller that implements the `JSON:API`                                           |                     
+| [`nestjs-rest-mongodb`](./packages/nestjs-rest-mongodb) | ![NPM Version](https://img.shields.io/npm/v/nestjs-rest-mongodb) | MongoDB adapter for `nestjs-rest`                                                          |                     
 
 ## Specification
 
 `JSON:API/v1` specification is a standard for building APIs in JSON
 format([reference](./packages/std-json-api/specs.md)).
-
-## Pagination Strategies
-
-There are two pagination strategies supported by this project:
-
-| Pagination Strategy     | Status | Description                                                                                          |
-|-------------------------|--------|------------------------------------------------------------------------------------------------------|
-| Offset-based pagination | ✈️     | Default pagination strategy using offset and limit query parameters.                                 |
-| Cursor-based pagination | ✈️     | Pagination strategy using cursor to provide a more efficient way to paginate through large datasets. |
 
 ### Implementation Report
 
@@ -48,7 +39,16 @@ There are two pagination strategies supported by this project:
 | crud                |            | ✈️     | https://jsonapi.org/format/#crud                |
 | query parameters    |            | ✈️     | https://jsonapi.org/format/#query-parameters    |
 | errors              |            | 🚧     | https://jsonapi.org/format/#errors              |
-| extensions          |            | 🫥     | https://jsonapi.org/extensions/                 |
+| extensions          |            | 🚧     | https://jsonapi.org/extensions/                 |
+
+### Pagination Strategies
+
+There are two pagination strategies supported by this project:
+
+| Pagination Strategy     | Status | Description                                                                                          |
+|-------------------------|--------|------------------------------------------------------------------------------------------------------|
+| Offset-based pagination | ✈️     | Default pagination strategy using offset and limit query parameters.                                 |
+| Cursor-based pagination | ✈️     | Pagination strategy using cursor to provide a more efficient way to paginate through large datasets. |
 
 ### Adapters Implementation Report
 
@@ -68,5 +68,6 @@ There are two pagination strategies supported by this project:
 
 - [x] Add a MongoDB adapter.
 - [x] Convert to be JSON:API compliant.
+- [ ] Add a client library.
 - [ ] Add any SQL DB adapter.
 - [ ] Add Typeorm support.
