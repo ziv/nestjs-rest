@@ -3,11 +3,9 @@ import expect from "expect";
 import {
   type CursorPagination,
   type JsonApiQuery,
-  type JsonApiQueryFields,
-  type JsonApiQueryFilter,
-  type JsonApiQuerySorting,
   type OffsetPagination,
   parser,
+  serializer,
 } from "./parser";
 
 describe("parser", () => {
@@ -539,6 +537,319 @@ describe("parser", () => {
       expect(result.sort).toEqual({ createdAt: -1 });
       expect(result.page).toEqual({ cursor: "eyJpZCI6MTIzfQ", field: "id", limit: 20 });
       expect(result.include).toEqual(["author", "mentions", "media"]);
+    });
+  });
+});
+
+describe("serializer", () => {
+  describe("empty and basic queries", () => {
+    it("should return empty string for empty object", () => {
+      const result = serializer({});
+      expect(result).toBe("");
+    });
+
+    it("should handle custom query parameters", () => {
+      const result = serializer({ customParam: "value", anotherParam: "123" });
+      expect(result).toContain("customParam=value");
+      expect(result).toContain("anotherParam=123");
+    });
+  });
+
+  describe("sort parameter", () => {
+    it("should serialize single ascending sort field", () => {
+      const result = serializer({ sort: { title: 1 } });
+      expect(result).toBe("sort=title");
+    });
+
+    it("should serialize single descending sort field", () => {
+      const result = serializer({ sort: { created: -1 } });
+      expect(result).toBe("sort=-created");
+    });
+
+    it("should serialize multiple sort fields", () => {
+      const result = serializer({ sort: { created: -1, title: 1, author: 1 } });
+      expect(result).toBe("sort=-created%2Ctitle%2Cauthor");
+    });
+
+    it("should serialize mixed ascending and descending sort", () => {
+      const result = serializer({ sort: { created: -1, title: 1, views: -1 } });
+      expect(result).toBe("sort=-created%2Ctitle%2C-views");
+    });
+  });
+
+  describe("page parameter - offset pagination", () => {
+    it("should serialize offset and limit", () => {
+      const result = serializer({ page: { offset: 20, limit: 10 } });
+      expect(result).toBe("page%5Boffset%5D=20&page%5Blimit%5D=10");
+    });
+
+    it("should serialize zero offset", () => {
+      const result = serializer({ page: { offset: 0, limit: 5 } });
+      expect(result).toBe("page%5Boffset%5D=0&page%5Blimit%5D=5");
+    });
+  });
+
+  describe("page parameter - cursor pagination", () => {
+    it("should serialize cursor and limit", () => {
+      const result = serializer({ page: { cursor: "eyJpZCI6MTAwfQ==", field: "id", limit: 20 } });
+      expect(result).toBe("page%5Bcursor%5D=eyJpZCI6MTAwfQ%3D%3D&page%5Blimit%5D=20");
+    });
+
+    it("should include field when not default", () => {
+      const result = serializer({ page: { cursor: "abc123", field: "createdAt", limit: 10 } });
+      expect(result).toContain("page%5Bfield%5D=createdAt");
+    });
+
+    it("should omit field when it is default (id)", () => {
+      const result = serializer({ page: { cursor: "abc123", field: "id", limit: 10 } });
+      expect(result).not.toContain("field");
+    });
+  });
+
+  describe("filter parameter", () => {
+    it("should serialize single filter field", () => {
+      const result = serializer({ filter: { status: "published" } });
+      expect(result).toBe("filter%5Bstatus%5D=published");
+    });
+
+    it("should serialize multiple filter fields", () => {
+      const result = serializer({ filter: { status: "published", author: "john" } });
+      expect(result).toContain("filter%5Bstatus%5D=published");
+      expect(result).toContain("filter%5Bauthor%5D=john");
+    });
+
+    it("should serialize nested filter fields", () => {
+      const result = serializer({
+        filter: {
+          created: {
+            gte: "2024-01-01",
+            lte: "2024-12-31",
+          },
+        },
+      });
+      expect(result).toContain("filter%5Bcreated%5D%5Bgte%5D=2024-01-01");
+      expect(result).toContain("filter%5Bcreated%5D%5Blte%5D=2024-12-31");
+    });
+  });
+
+  describe("fields parameter", () => {
+    it("should serialize single resource type fields", () => {
+      const result = serializer({
+        fields: {
+          articles: { title: 1, body: 1 },
+        },
+      });
+      expect(result).toBe("fields%5Barticles%5D=title%2Cbody");
+    });
+
+    it("should serialize multiple resource type fields", () => {
+      const result = serializer({
+        fields: {
+          articles: { title: 1, body: 1 },
+          people: { name: 1, email: 1 },
+        },
+      });
+      expect(result).toContain("fields%5Barticles%5D=title%2Cbody");
+      expect(result).toContain("fields%5Bpeople%5D=name%2Cemail");
+    });
+
+    it("should only include fields with value 1", () => {
+      const result = serializer({
+        fields: {
+          articles: { title: 1, body: 0, author: 1 },
+        },
+      });
+      const decoded = decodeURIComponent(result);
+      expect(decoded).toBe("fields[articles]=title,author");
+    });
+  });
+
+  describe("include parameter", () => {
+    it("should serialize single include relationship", () => {
+      const result = serializer({ include: ["author"] });
+      expect(result).toBe("include=author");
+    });
+
+    it("should serialize multiple include relationships", () => {
+      const result = serializer({ include: ["author", "comments"] });
+      expect(result).toBe("include=author%2Ccomments");
+    });
+
+    it("should serialize nested include relationships", () => {
+      const result = serializer({ include: ["author", "comments.author"] });
+      expect(result).toBe("include=author%2Ccomments.author");
+    });
+  });
+
+  describe("combined parameters", () => {
+    it("should serialize all parameters together", () => {
+      const query: JsonApiQuery = {
+        sort: { created: -1, title: 1 },
+        page: { offset: 20, limit: 10 },
+        filter: { status: "published" },
+        fields: { articles: { title: 1, body: 1 } },
+        include: ["author", "comments"],
+      };
+
+      const result = serializer(query);
+
+      expect(result).toContain("sort=-created%2Ctitle");
+      expect(result).toContain("page%5Boffset%5D=20");
+      expect(result).toContain("page%5Blimit%5D=10");
+      expect(result).toContain("filter%5Bstatus%5D=published");
+      expect(result).toContain("fields%5Barticles%5D=title%2Cbody");
+      expect(result).toContain("include=author%2Ccomments");
+    });
+  });
+
+  describe("round-trip (parser <-> serializer)", () => {
+    it("should round-trip sort parameter", () => {
+      const original: JsonApiQuery = { sort: { created: -1, title: 1 } };
+      const serialized = serializer(original);
+      const parsed = parser(serialized);
+
+      expect(parsed.sort).toEqual(original.sort);
+    });
+
+    it("should round-trip offset pagination", () => {
+      const original: JsonApiQuery = { page: { offset: 20, limit: 10 } };
+      const serialized = serializer(original);
+      const parsed = parser(serialized);
+
+      expect(parsed.page).toEqual(original.page);
+    });
+
+    it("should round-trip cursor pagination", () => {
+      const original: JsonApiQuery = { page: { cursor: "eyJpZCI6MTAwfQ==", field: "id", limit: 20 } };
+      const serialized = serializer(original);
+      const parsed = parser(serialized);
+
+      expect(parsed.page).toEqual(original.page);
+    });
+
+    it("should round-trip filter parameter", () => {
+      const original: JsonApiQuery = {
+        filter: {
+          status: "published",
+          created: { gte: "2024-01-01", lte: "2024-12-31" },
+        },
+      };
+      const serialized = serializer(original);
+      const parsed = parser(serialized);
+
+      expect(parsed.filter).toEqual(original.filter);
+    });
+
+    it("should round-trip fields parameter", () => {
+      const original: JsonApiQuery = {
+        fields: {
+          articles: { title: 1, body: 1 },
+          people: { name: 1 },
+        },
+      };
+      const serialized = serializer(original);
+      const parsed = parser(serialized);
+
+      expect(parsed.fields).toEqual(original.fields);
+    });
+
+    it("should round-trip include parameter", () => {
+      const original: JsonApiQuery = { include: ["author", "comments.author", "tags"] };
+      const serialized = serializer(original);
+      const parsed = parser(serialized);
+
+      expect(parsed.include).toEqual(original.include);
+    });
+
+    it("should round-trip complex real-world query", () => {
+      const original: JsonApiQuery = {
+        sort: { publishedAt: -1, title: 1 },
+        page: { offset: 0, limit: 25 },
+        filter: { status: "published", category: "tech" },
+        fields: {
+          articles: { title: 1, body: 1, publishedAt: 1, slug: 1 },
+          people: { name: 1, email: 1 },
+        },
+        include: ["author", "comments.author", "category"],
+      };
+
+      const serialized = serializer(original);
+      const parsed = parser(serialized);
+
+      expect(parsed.sort).toEqual(original.sort);
+      expect(parsed.page).toEqual(original.page);
+      expect(parsed.filter).toEqual(original.filter);
+      expect(parsed.fields).toEqual(original.fields);
+      expect(parsed.include).toEqual(original.include);
+    });
+
+    it("should round-trip blog API query", () => {
+      const original: JsonApiQuery = {
+        sort: { publishedAt: -1 },
+        page: { offset: 0, limit: 10 },
+        filter: { status: "published", author: "john-doe" },
+        fields: {
+          posts: { title: 1, excerpt: 1, publishedAt: 1, author: 1 },
+          users: { name: 1, avatar: 1 },
+        },
+        include: ["author", "comments"],
+      };
+
+      const serialized = serializer(original);
+      const parsed = parser(serialized);
+
+      expect(parsed.sort).toEqual(original.sort);
+      expect(parsed.page).toEqual(original.page);
+      expect(parsed.filter).toEqual(original.filter);
+      expect(parsed.fields).toEqual(original.fields);
+      expect(parsed.include).toEqual(original.include);
+    });
+
+    it("should round-trip e-commerce product query", () => {
+      const original: JsonApiQuery = {
+        sort: { price: 1, rating: -1 },
+        page: { offset: 20, limit: 24 },
+        filter: {
+          category: "electronics",
+          price: { gte: "100", lte: "500" },
+          inStock: "true",
+        },
+        fields: {
+          products: { name: 1, price: 1, image: 1, rating: 1 },
+        },
+        include: ["category", "reviews"],
+      };
+
+      const serialized = serializer(original);
+      const parsed = parser(serialized);
+
+      expect(parsed.sort).toEqual(original.sort);
+      expect(parsed.page).toEqual(original.page);
+      expect(parsed.filter).toEqual(original.filter);
+      expect(parsed.fields).toEqual(original.fields);
+      expect(parsed.include).toEqual(original.include);
+    });
+
+    it("should round-trip social media feed query with cursor", () => {
+      const original: JsonApiQuery = {
+        sort: { createdAt: -1 },
+        page: { cursor: "eyJpZCI6MTIzfQ", field: "id", limit: 20 },
+        filter: { visibility: "public" },
+        fields: {
+          posts: { content: 1, createdAt: 1, likesCount: 1, commentsCount: 1 },
+          users: { username: 1, displayName: 1, avatar: 1 },
+        },
+        include: ["author", "mentions", "media"],
+      };
+
+      const serialized = serializer(original);
+      const parsed = parser(serialized);
+
+      expect(parsed.sort).toEqual(original.sort);
+      expect(parsed.page).toEqual(original.page);
+      expect(parsed.filter).toEqual(original.filter);
+      expect(parsed.fields).toEqual(original.fields);
+      expect(parsed.include).toEqual(original.include);
     });
   });
 });

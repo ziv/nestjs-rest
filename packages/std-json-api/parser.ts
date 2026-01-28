@@ -380,3 +380,141 @@ function parseIncludeParameter(includeString: string): string[] {
         .map((path) => path.trim())
         .filter(Boolean);
 }
+
+/**
+ * Serializes a JSON:API query object into a URL query string.
+ *
+ * This function is the inverse of `parser` and handles the standard JSON:API query parameters:
+ * - `sort`: Converted to comma-separated field names, `-` prefix for descending order
+ * - `page.offset` and `page.limit`: Converted to `page[offset]` and `page[limit]`
+ * - `page.cursor`, `page.field` and `page.limit`: Converted to cursor-based pagination params
+ * - `filter`: Converted to `filter[field]` format (supports nested structures)
+ * - `fields`: Converted to `fields[type]=field1,field2` format
+ * - `include`: Converted to comma-separated relationship paths
+ *
+ * @param query - The JSON:API query object to serialize
+ * @returns URL query string (without leading `?`)
+ *
+ * @example
+ * ```ts
+ * const queryString = serializer({
+ *   sort: { created: -1, title: 1 },
+ *   page: { offset: 20, limit: 10 }
+ * });
+ * // Returns: "sort=-created,title&page[offset]=20&page[limit]=10"
+ * ```
+ *
+ * @example
+ * ```ts
+ * const queryString = serializer({
+ *   filter: { status: "published" },
+ *   include: ["author", "comments"]
+ * });
+ * // Returns: "filter[status]=published&include=author,comments"
+ * ```
+ *
+ * @see https://jsonapi.org/format/#fetching
+ */
+export function serializer(query: JsonApiQuery): string {
+    const obj: Record<string, unknown> = {};
+
+    // Serialize sort parameter
+    if (query.sort && Object.keys(query.sort).length > 0) {
+        obj.sort = serializeSortParameter(query.sort);
+    }
+
+    // Serialize page parameters
+    if (query.page) {
+        obj.page = serializePageParameter(query.page);
+    }
+
+    // Serialize filter parameters (pass through as-is, qs handles nested objects)
+    if (query.filter && Object.keys(query.filter).length > 0) {
+        obj.filter = query.filter;
+    }
+
+    // Serialize fields parameters
+    if (query.fields && Object.keys(query.fields).length > 0) {
+        obj.fields = serializeFieldsParameter(query.fields);
+    }
+
+    // Serialize include parameter
+    if (query.include && query.include.length > 0) {
+        obj.include = query.include.join(",");
+    }
+
+    // Pass through custom query parameters
+    for (const [key, value] of Object.entries(query)) {
+        if (!["sort", "page", "filter", "fields", "include"].includes(key)) {
+            obj[key] = value;
+        }
+    }
+
+    return qs.stringify(obj, {allowDots: false});
+}
+
+/**
+ * Converts sort object to comma-separated string format.
+ *
+ * @param sort - Sort object mapping field names to directions (1 or -1)
+ * @returns Comma-separated field names with optional `-` prefix for descending
+ *
+ * @internal
+ */
+function serializeSortParameter(sort: JsonApiQuerySorting): string {
+    return Object.entries(sort)
+        .map(([field, direction]) => direction === -1 ? `-${field}` : field)
+        .join(",");
+}
+
+/**
+ * Converts page object to qs-compatible structure.
+ *
+ * @param page - Pagination object (OffsetPagination or CursorPagination)
+ * @returns Object suitable for qs.stringify
+ *
+ * @internal
+ */
+function serializePageParameter(
+    page: OffsetPagination | CursorPagination,
+): Record<string, string | number> {
+    if ("cursor" in page) {
+        const result: Record<string, string | number> = {
+            cursor: page.cursor,
+            limit: page.limit,
+        };
+        if (page.field && page.field !== "id") {
+            result.field = page.field;
+        }
+        return result;
+    }
+
+    return {
+        offset: page.offset,
+        limit: page.limit,
+    };
+}
+
+/**
+ * Converts fields object to qs-compatible structure with comma-separated values.
+ *
+ * @param fields - Fields object mapping resource types to field selections
+ * @returns Object with resource types as keys and comma-separated field names as values
+ *
+ * @internal
+ */
+function serializeFieldsParameter(fields: JsonApiQueryFields): Record<string, string> {
+    const result: Record<string, string> = {};
+
+    for (const [resourceType, fieldMap] of Object.entries(fields)) {
+        const includedFields = Object.entries(fieldMap)
+            .filter(([, included]) => included === 1)
+            .map(([fieldName]) => fieldName);
+
+        if (includedFields.length > 0) {
+            result[resourceType] = includedFields.join(",");
+        }
+    }
+
+    return result;
+}
