@@ -71,7 +71,7 @@ describe("jsonQueryDecorator", () => {
       const result = jsonQueryDecorator(undefined, ctx);
 
       expect(result).toBeDefined();
-      expect(result).toEqual({});
+      expect(result).toEqual({ sort: {}, fields: {} });
     });
 
     it("should process relative path with query string", () => {
@@ -94,7 +94,7 @@ describe("jsonQueryDecorator", () => {
       const ctx = createMockContext("/articles?");
       const result = jsonQueryDecorator(undefined, ctx);
 
-      expect(result).toEqual({});
+      expect(result).toEqual({ sort: {}, fields: {} });
     });
   });
 
@@ -180,22 +180,21 @@ describe("jsonQueryDecorator", () => {
       const ctx = createMockContext("/articles");
       const result = jsonQueryDecorator(undefined, ctx);
 
-      expect(result).toEqual({});
-      expect(Object.keys(result)).toHaveLength(0);
+      expect(result).toEqual({ sort: {}, fields: {} });
     });
 
     it("should return empty object for path with empty query string", () => {
       const ctx = createMockContext("/articles?");
       const result = jsonQueryDecorator(undefined, ctx);
 
-      expect(result).toEqual({});
+      expect(result).toEqual({ sort: {}, fields: {} });
     });
 
     it("should return empty object for root path", () => {
       const ctx = createMockContext("/");
       const result = jsonQueryDecorator(undefined, ctx);
 
-      expect(result).toEqual({});
+      expect(result).toEqual({ sort: {}, fields: {} });
     });
   });
 
