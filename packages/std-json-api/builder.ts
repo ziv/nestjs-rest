@@ -1,10 +1,11 @@
 import {
-    ErrorObject,
-    JsonApiCollectionDocument,
-    JsonApiDocumentBase,
-    JsonApiErrorDocument,
-    JsonApiSingleDocument,
-    ResourceObject,
+  ErrorObject,
+  JsonApiCollectionDocument,
+  JsonApiDocumentBase,
+  JsonApiErrorDocument,
+  JsonApiSingleDocument,
+  Link,
+  ResourceObject,
 } from "./json-api";
 
 /**
@@ -28,83 +29,95 @@ import {
  * @see https://jsonapi.org/format/#document-structure
  */
 export class JsonApiBaseBuilder<T extends JsonApiDocumentBase> {
-    /**
-     * The document being built.
-     * Initialized with JSON:API version 1.0 by default.
-     */
-    protected readonly doc: T = {
-        jsonapi: {
-            version: "1.0",
-        },
-    } as T;
+  /**
+   * The document being built.
+   * Initialized with JSON:API version 1.0 by default.
+   */
+  protected readonly doc: T = {
+    jsonapi: {
+      version: "1.0",
+    },
+    links: {},
+  } as T;
 
-    /**
-     * Builds and returns the completed JSON:API document.
-     *
-     * @returns The fully constructed JSON:API document
-     *
-     * @example
-     * ```ts
-     * const document = builder.build();
-     * ```
-     */
-    build(): T {
-        return structuredClone(this.doc) as T;
-    }
+  /**
+   * Builds and returns the completed JSON:API document.
+   *
+   * @returns The fully constructed JSON:API document
+   *
+   * @example
+   * ```ts
+   * const document = builder.build();
+   * ```
+   */
+  build(): T {
+    return structuredClone(this.doc) as T;
+  }
 
-    /**
-     * Sets meta-information on the document.
-     *
-     * Metaobjects contain non-standard meta-information about the document.
-     * This can include pagination totals, copyright information, or any other
-     * custom metadata.
-     *
-     * @param meta - The metaobject to set
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder.metadata({
-     *   total: 100,
-     *   page: 1,
-     *   copyright: "2024 Example Corp"
-     * });
-     * ```
-     *
-     * @see https://jsonapi.org/format/#document-meta
-     */
-    metadata(meta: JsonApiDocumentBase["meta"]): this {
-        this.doc.meta = meta;
-        return this;
-    }
+  /**
+   * Sets meta-information on the document.
+   *
+   * Metaobjects contain non-standard meta-information about the document.
+   * This can include pagination totals, copyright information, or any other
+   * custom metadata.
+   *
+   * @param meta - The metaobject to set
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder.metadata({
+   *   total: 100,
+   *   page: 1,
+   *   copyright: "2024 Example Corp"
+   * });
+   * ```
+   *
+   * @see https://jsonapi.org/format/#document-meta
+   */
+  metadata(meta: JsonApiDocumentBase["meta"]): this {
+    this.doc.meta = meta;
+    return this;
+  }
 
-    /**
-     * Sets links on the document.
-     *
-     * Links can include pagination links (first, last, prev, next), self links,
-     * and any other custom links. Links can be strings (URIs) or link objects
-     * with additional metadata.
-     *
-     * @param links - The links object to set
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder.links({
-     *   self: "/articles?page[offset]=0&page[limit]=10",
-     *   next: "/articles?page[offset]=10&page[limit]=10",
-     *   first: "/articles?page[offset]=0&page[limit]=10",
-     *   last: "/articles?page[offset]=90&page[limit]=10"
-     * });
-     * ```
-     *
-     * @see https://jsonapi.org/format/#document-links
-     * @see https://jsonapi.org/format/#fetching-pagination
-     */
-    links(links: JsonApiDocumentBase["links"]): this {
-        this.doc.links = links;
-        return this;
-    }
+  /**
+   * Sets links on the document.
+   *
+   * Links can include pagination links (first, last, prev, next), self links,
+   * and any other custom links. Links can be strings (URIs) or link objects
+   * with additional metadata.
+   *
+   * @param links - The links object to set
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder.links({
+   *   self: "/articles?page[offset]=0&page[limit]=10",
+   *   next: "/articles?page[offset]=10&page[limit]=10",
+   *   first: "/articles?page[offset]=0&page[limit]=10",
+   *   last: "/articles?page[offset]=90&page[limit]=10"
+   * });
+   * ```
+   *
+   * @see https://jsonapi.org/format/#document-links
+   * @see https://jsonapi.org/format/#fetching-pagination
+   */
+  links(links: JsonApiDocumentBase["links"]): this {
+    this.doc.links = { ...this.doc.links, ...links };
+    return this;
+  }
+
+  /**
+   * Adds a single link to the document.
+   *
+   * @param key
+   * @param value
+   */
+  link(key: string, value: Link): this {
+    this.doc.links[key] = value;
+    return this;
+  }
 }
 
 /**
@@ -131,184 +144,191 @@ export class JsonApiBaseBuilder<T extends JsonApiDocumentBase> {
  * @see https://jsonapi.org/format/#document-resource-objects
  */
 export class JsonApiResourceBuilder {
-    /**
-     * The resource object being built.
-     */
-    private readonly resource: ResourceObject;
+  /**
+   * The resource object being built.
+   */
+  private readonly resource: ResourceObject;
 
-    /**
-     * Creates a new resource builder.
-     *
-     * @param type - The resource type (required)
-     * @param id - The resource ID (optional, omit for new resources being created)
-     *
-     * @example
-     * ```ts
-     * // Existing resource with ID
-     * const builder = new JsonApiResourceBuilder("articles", "1");
-     *
-     * // New resource without ID (client-side creation)
-     * const builder = new JsonApiResourceBuilder("articles");
-     * ```
-     */
-    constructor(type: string, id?: string) {
-        this.resource = {type, id};
+  /**
+   * Creates a new resource builder.
+   *
+   * @param type - The resource type (required)
+   * @param id - The resource ID (optional, omit for new resources being created)
+   *
+   * @throws Error if type is not provided or is empty
+   *
+   * @example
+   * ```ts
+   * // Existing resource with ID
+   * const builder = new JsonApiResourceBuilder("articles", "1");
+   *
+   * // New resource without ID (client-side creation)
+   * const builder = new JsonApiResourceBuilder("articles");
+   * ```
+   */
+  constructor(type: string, id?: string) {
+    if (!type || type.trim() === "") {
+      throw new Error(
+        "Resource type is required. JSON:API spec requires every resource to have a type.",
+      );
     }
+    this.resource = { type, id };
+  }
 
-    /**
-     * Sets a local identifier for new resources being created.
-     *
-     * The `lid` is used when a resource originates at the client and represents
-     * a new resource to be created on the server. It provides a way to uniquely
-     * identify the resource within the document.
-     *
-     * @param lid - The local identifier string
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder.lid("temp-article-1");
-     * ```
-     *
-     * @see https://jsonapi.org/format/#document-resource-object-identification
-     */
-    lid(lid: ResourceObject["lid"]): this {
-        this.resource.lid = lid;
-        return this;
-    }
+  /**
+   * Sets a local identifier for new resources being created.
+   *
+   * The `lid` is used when a resource originates at the client and represents
+   * a new resource to be created on the server. It provides a way to uniquely
+   * identify the resource within the document.
+   *
+   * @param lid - The local identifier string
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder.lid("temp-article-1");
+   * ```
+   *
+   * @see https://jsonapi.org/format/#document-resource-object-identification
+   */
+  lid(lid: ResourceObject["lid"]): this {
+    this.resource.lid = lid;
+    return this;
+  }
 
-    /**
-     * Sets the resource's attributes.
-     *
-     * Attributes contain the resource's data. They can include any valid JSON value,
-     * including complex structures with nested objects and arrays.
-     *
-     * Note: Keys that reference related resources (e.g., "author_id") SHOULD NOT
-     * appear as attributes. Use relationships instead.
-     *
-     * @param attributes - Object containing the resource's attributes
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder.attributes({
-     *   title: "JSON:API paints my bikeshed!",
-     *   body: "The shortest article. Ever.",
-     *   publishedAt: "2024-01-15T10:00:00Z"
-     * });
-     * ```
-     *
-     * @see https://jsonapi.org/format/#document-resource-object-attributes
-     */
-    attributes(attributes: ResourceObject["attributes"]): this {
-        this.resource.attributes = attributes;
-        return this;
-    }
+  /**
+   * Sets the resource's attributes.
+   *
+   * Attributes contain the resource's data. They can include any valid JSON value,
+   * including complex structures with nested objects and arrays.
+   *
+   * Note: Keys that reference related resources (e.g., "author_id") SHOULD NOT
+   * appear as attributes. Use relationships instead.
+   *
+   * @param attributes - Object containing the resource's attributes
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder.attributes({
+   *   title: "JSON:API paints my bikeshed!",
+   *   body: "The shortest article. Ever.",
+   *   publishedAt: "2024-01-15T10:00:00Z"
+   * });
+   * ```
+   *
+   * @see https://jsonapi.org/format/#document-resource-object-attributes
+   */
+  attributes(attributes: ResourceObject["attributes"]): this {
+    this.resource.attributes = attributes;
+    return this;
+  }
 
-    /**
-     * Sets the resource's relationships to other resources.
-     *
-     * Relationships describe connections between this resource and other
-     * JSON:API resources. Each relationship can include links and/or
-     * resource linkage data.
-     *
-     * @param relationships - Object containing the resource's relationships
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder.relationships({
-     *   author: {
-     *     data: { type: "people", id: "9" },
-     *     links: {
-     *       self: "/articles/1/relationships/author",
-     *       related: "/articles/1/author"
-     *     }
-     *   },
-     *   comments: {
-     *     data: [
-     *       { type: "comments", id: "5" },
-     *       { type: "comments", id: "12" }
-     *     ]
-     *   }
-     * });
-     * ```
-     *
-     * @see https://jsonapi.org/format/#document-resource-object-relationships
-     */
-    relationships(relationships: ResourceObject["relationships"]): this {
-        this.resource.relationships = relationships;
-        return this;
-    }
+  /**
+   * Sets the resource's relationships to other resources.
+   *
+   * Relationships describe connections between this resource and other
+   * JSON:API resources. Each relationship can include links and/or
+   * resource linkage data.
+   *
+   * @param relationships - Object containing the resource's relationships
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder.relationships({
+   *   author: {
+   *     data: { type: "people", id: "9" },
+   *     links: {
+   *       self: "/articles/1/relationships/author",
+   *       related: "/articles/1/author"
+   *     }
+   *   },
+   *   comments: {
+   *     data: [
+   *       { type: "comments", id: "5" },
+   *       { type: "comments", id: "12" }
+   *     ]
+   *   }
+   * });
+   * ```
+   *
+   * @see https://jsonapi.org/format/#document-resource-object-relationships
+   */
+  relationships(relationships: ResourceObject["relationships"]): this {
+    this.resource.relationships = relationships;
+    return this;
+  }
 
-    /**
-     * Sets links related to the resource.
-     *
-     * Links can include a `self` link that identifies the resource,
-     * as well as any custom links specific to the resource.
-     *
-     * @param links - Object containing the resource's links
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder.links({
-     *   self: "http://example.com/articles/1"
-     * });
-     * ```
-     *
-     * @see https://jsonapi.org/format/#document-resource-object-links
-     */
-    links(links: ResourceObject["links"]): this {
-        this.resource.links = links;
-        return this;
-    }
+  /**
+   * Sets links related to the resource.
+   *
+   * Links can include a `self` link that identifies the resource,
+   * as well as any custom links specific to the resource.
+   *
+   * @param links - Object containing the resource's links
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder.links({
+   *   self: "http://example.com/articles/1"
+   * });
+   * ```
+   *
+   * @see https://jsonapi.org/format/#document-resource-object-links
+   */
+  links(links: ResourceObject["links"]): this {
+    this.resource.links = links;
+    return this;
+  }
 
-    /**
-     * Sets non-standard meta-information about the resource.
-     *
-     * Meta information can contain any data that doesn't fit in attributes
-     * or relationships, such as computed values, timestamps, or other metadata.
-     *
-     * @param meta - Object containing meta-information
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder.meta({
-     *   created: "2024-01-15T10:00:00Z",
-     *   updated: "2024-01-20T14:30:00Z",
-     *   views: 1024
-     * });
-     * ```
-     *
-     * @see https://jsonapi.org/format/#document-meta
-     */
-    meta(meta: ResourceObject["meta"]): this {
-        this.resource.meta = meta;
-        return this;
-    }
+  /**
+   * Sets non-standard meta-information about the resource.
+   *
+   * Meta information can contain any data that doesn't fit in attributes
+   * or relationships, such as computed values, timestamps, or other metadata.
+   *
+   * @param meta - Object containing meta-information
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder.meta({
+   *   created: "2024-01-15T10:00:00Z",
+   *   updated: "2024-01-20T14:30:00Z",
+   *   views: 1024
+   * });
+   * ```
+   *
+   * @see https://jsonapi.org/format/#document-meta
+   */
+  meta(meta: ResourceObject["meta"]): this {
+    this.resource.meta = meta;
+    return this;
+  }
 
-    /**
-     * Builds and returns the completed resource object.
-     *
-     * @returns The fully constructed resource object
-     *
-     * @example
-     * ```ts
-     * const resource = builder.build();
-     * ```
-     */
-    build(): ResourceObject {
-        return structuredClone(this.resource);
-    }
+  /**
+   * Builds and returns the completed resource object.
+   *
+   * @returns The fully constructed resource object
+   *
+   * @example
+   * ```ts
+   * const resource = builder.build();
+   * ```
+   */
+  build(): ResourceObject {
+    return structuredClone(this.resource);
+  }
 }
 
 /**
  * Builder for JSON:API documents containing only meta information.
  */
 export class JsonApiMetaDocumentBuilder
-    extends JsonApiBaseBuilder<JsonApiDocumentBase> {
+  extends JsonApiBaseBuilder<JsonApiDocumentBase> {
 }
 
 /**
@@ -354,69 +374,95 @@ export class JsonApiMetaDocumentBuilder
  * @see https://jsonapi.org/format/#error-objects
  */
 export class JsonApiErrorDocumentBuilder
-    extends JsonApiBaseBuilder<JsonApiErrorDocument> {
-    /**
-     * Sets all errors for the document.
-     *
-     * Replaces any existing errors with the provided array.
-     *
-     * @param errors - Array of error objects
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder.errors([
-     *   {
-     *     status: "422",
-     *     title: "Validation Failed",
-     *     detail: "Title is required",
-     *     source: { pointer: "/data/attributes/title" }
-     *   },
-     *   {
-     *     status: "422",
-     *     title: "Validation Failed",
-     *     detail: "Email is invalid",
-     *     source: { pointer: "/data/attributes/email" }
-     *   }
-     * ]);
-     * ```
-     */
-    errors(errors: ErrorObject[]): this {
-        this.doc.errors = errors;
-        return this;
+  extends JsonApiBaseBuilder<JsonApiErrorDocument> {
+  /**
+   * Creates a new error document builder.
+   *
+   * @param error - The initial error object (required). At least one error must be provided.
+   *
+   * @throws Error if error is not provided
+   *
+   * @example
+   * ```ts
+   * const document = new JsonApiErrorDocumentBuilder({
+   *   status: "404",
+   *   title: "Not Found",
+   *   detail: "Article with id '123' does not exist"
+   * }).build();
+   * ```
+   */
+  constructor(error: ErrorObject) {
+    super();
+    if (!error) {
+      throw new Error(
+        "At least one error is required. JSON:API spec requires error documents to have an errors array.",
+      );
     }
+    this.doc.errors = [error];
+  }
 
-    /**
-     * Adds a single error to the document.
-     *
-     * Appends the error to the existing errors array, or creates
-     * a new array if none exists.
-     *
-     * @param error - The error object to add
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder
-     *   .error({
-     *     status: "400",
-     *     title: "Bad Request",
-     *     detail: "Invalid JSON in request body"
-     *   })
-     *   .error({
-     *     status: "400",
-     *     title: "Bad Request",
-     *     detail: "Missing required header"
-     *   });
-     * ```
-     */
-    error(error: ErrorObject): this {
-        if (!this.doc.errors) {
-            this.doc.errors = [];
-        }
-        this.doc.errors.push(error);
-        return this;
+  /**
+   * Sets all errors for the document.
+   *
+   * Replaces any existing errors with the provided array.
+   *
+   * @param errors - Array of error objects
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder.errors([
+   *   {
+   *     status: "422",
+   *     title: "Validation Failed",
+   *     detail: "Title is required",
+   *     source: { pointer: "/data/attributes/title" }
+   *   },
+   *   {
+   *     status: "422",
+   *     title: "Validation Failed",
+   *     detail: "Email is invalid",
+   *     source: { pointer: "/data/attributes/email" }
+   *   }
+   * ]);
+   * ```
+   */
+  errors(errors: ErrorObject[]): this {
+    this.doc.errors = errors;
+    return this;
+  }
+
+  /**
+   * Adds a single error to the document.
+   *
+   * Appends the error to the existing errors array, or creates
+   * a new array if none exists.
+   *
+   * @param error - The error object to add
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder
+   *   .error({
+   *     status: "400",
+   *     title: "Bad Request",
+   *     detail: "Invalid JSON in request body"
+   *   })
+   *   .error({
+   *     status: "400",
+   *     title: "Bad Request",
+   *     detail: "Missing required header"
+   *   });
+   * ```
+   */
+  error(error: ErrorObject): this {
+    if (!this.doc.errors) {
+      this.doc.errors = [];
     }
+    this.doc.errors.push(error);
+    return this;
+  }
 }
 
 /**
@@ -446,74 +492,101 @@ export class JsonApiErrorDocumentBuilder
  * @see https://jsonapi.org/format/#document-top-level
  */
 export class JsonApiDocumentBuilder
-    extends JsonApiBaseBuilder<JsonApiSingleDocument> {
-    /**
-     * Sets the primary data for the document.
-     *
-     * The primary data can be:
-     * - A resource object with full attributes and relationships
-     * - A resource identifier object (type and id only)
-     * - null (for empty to-one relationships or missing resources)
-     *
-     * @param data - The primary data to set
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * // Full resource object
-     * builder.data({
-     *   type: "articles",
-     *   id: "1",
-     *   attributes: { title: "Hello World" }
-     * });
-     *
-     * // Resource identifier
-     * builder.data({ type: "articles", id: "1" });
-     *
-     * // Null (resource not found)
-     * builder.data(null);
-     * ```
-     */
-    data(data: JsonApiSingleDocument["data"]): this {
-        this.doc.data = data;
-        return this;
+  extends JsonApiBaseBuilder<JsonApiSingleDocument> {
+  /**
+   * Creates a new single document builder.
+   *
+   * @param data - The primary data (required). Can be a resource object, resource identifier, or null.
+   *
+   * @example
+   * ```ts
+   * const document = new JsonApiDocumentBuilder({
+   *   type: "articles",
+   *   id: "1",
+   *   attributes: { title: "Hello World" }
+   * }).build();
+   *
+   * // For null data (e.g., empty to-one relationship)
+   * const document = new JsonApiDocumentBuilder(null).build();
+   * ```
+   */
+  constructor(data: JsonApiSingleDocument["data"]) {
+    super();
+    if (data === undefined) {
+      throw new Error(
+        "Data is required. JSON:API spec requires documents to have a data member. Use null for empty relationships.",
+      );
     }
+    this.doc.data = data;
+  }
 
-    /**
-     * Sets included resources for compound documents.
-     *
-     * Included resources are related resources that were requested via the
-     * `include` query parameter. All included resources MUST be referenced
-     * via a relationship chain from the primary data.
-     *
-     * @param included - Array of resource objects to include
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder.included([
-     *   {
-     *     type: "people",
-     *     id: "9",
-     *     attributes: {
-     *       firstName: "Dan",
-     *       lastName: "Gebhardt"
-     *     }
-     *   },
-     *   {
-     *     type: "comments",
-     *     id: "5",
-     *     attributes: { body: "First!" }
-     *   }
-     * ]);
-     * ```
-     *
-     * @see https://jsonapi.org/format/#document-compound-documents
-     */
-    included(included: JsonApiSingleDocument["included"]): this {
-        this.doc.included = included;
-        return this;
-    }
+  /**
+   * Sets the primary data for the document.
+   *
+   * The primary data can be:
+   * - A resource object with full attributes and relationships
+   * - A resource identifier object (type and id only)
+   * - null (for empty to-one relationships or missing resources)
+   *
+   * @param data - The primary data to set
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * // Full resource object
+   * builder.data({
+   *   type: "articles",
+   *   id: "1",
+   *   attributes: { title: "Hello World" }
+   * });
+   *
+   * // Resource identifier
+   * builder.data({ type: "articles", id: "1" });
+   *
+   * // Null (resource not found)
+   * builder.data(null);
+   * ```
+   */
+  data(data: JsonApiSingleDocument["data"]): this {
+    this.doc.data = data;
+    return this;
+  }
+
+  /**
+   * Sets included resources for compound documents.
+   *
+   * Included resources are related resources that were requested via the
+   * `include` query parameter. All included resources MUST be referenced
+   * via a relationship chain from the primary data.
+   *
+   * @param included - Array of resource objects to include
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder.included([
+   *   {
+   *     type: "people",
+   *     id: "9",
+   *     attributes: {
+   *       firstName: "Dan",
+   *       lastName: "Gebhardt"
+   *     }
+   *   },
+   *   {
+   *     type: "comments",
+   *     id: "5",
+   *     attributes: { body: "First!" }
+   *   }
+   * ]);
+   * ```
+   *
+   * @see https://jsonapi.org/format/#document-compound-documents
+   */
+  included(included: JsonApiSingleDocument["included"]): this {
+    this.doc.included = included;
+    return this;
+  }
 }
 
 /**
@@ -551,69 +624,97 @@ export class JsonApiDocumentBuilder
  * @see https://jsonapi.org/format/#document-top-level
  */
 export class JsonApiCollectionDocumentBuilder
-    extends JsonApiBaseBuilder<JsonApiCollectionDocument> {
-    /**
-     * Sets the primary data collection for the document.
-     *
-     * The primary data can be:
-     * - An array of resource objects with full attributes and relationships
-     * - An array of resource identifier objects (type and id only)
-     * - An empty array (for empty collections)
-     *
-     * @param data - The array of resources to set
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * // Array of resource objects
-     * builder.data([
-     *   { type: "articles", id: "1", attributes: { title: "First" } },
-     *   { type: "articles", id: "2", attributes: { title: "Second" } }
-     * ]);
-     *
-     * // Array of resource identifiers
-     * builder.data([
-     *   { type: "articles", id: "1" },
-     *   { type: "articles", id: "2" }
-     * ]);
-     *
-     * // Empty collection
-     * builder.data([]);
-     * ```
-     */
-    data(data: JsonApiCollectionDocument["data"]): this {
-        this.doc.data = data;
-        return this;
+  extends JsonApiBaseBuilder<JsonApiCollectionDocument> {
+  /**
+   * Creates a new collection document builder.
+   *
+   * @param data - The primary data array (required). Can be an array of resource objects or resource identifiers.
+   *
+   * @throws Error if data is not provided
+   *
+   * @example
+   * ```ts
+   * const document = new JsonApiCollectionDocumentBuilder([
+   *   { type: "articles", id: "1", attributes: { title: "First" } },
+   *   { type: "articles", id: "2", attributes: { title: "Second" } }
+   * ]).build();
+   *
+   * // For empty collection
+   * const document = new JsonApiCollectionDocumentBuilder([]).build();
+   * ```
+   */
+  constructor(data: JsonApiCollectionDocument["data"]) {
+    super();
+    if (data === undefined || data === null) {
+      throw new Error(
+        "Data array is required. JSON:API spec requires collection documents to have a data array. Use [] for empty collections.",
+      );
     }
+    this.doc.data = data;
+  }
 
-    /**
-     * Sets included resources for compound documents.
-     *
-     * Included resources are related resources that were requested via the
-     * `include` query parameter. All included resources MUST be referenced
-     * via a relationship chain from the primary data.
-     *
-     * @param included - Array of resource objects to include
-     * @returns The builder instance for method chaining
-     *
-     * @example
-     * ```ts
-     * builder.included([
-     *   {
-     *     type: "people",
-     *     id: "9",
-     *     attributes: {
-     *       firstName: "Dan",
-     *       lastName: "Gebhardt"
-     *     }
-     *   }
-     * ]);
-     * ```
-     *
-     * @see https://jsonapi.org/format/#document-compound-documents
-     */
-    included(included: JsonApiCollectionDocument["included"]): this {
-        this.doc.included = included;
-        return this;
-    }
+  /**
+   * Sets the primary data collection for the document.
+   *
+   * The primary data can be:
+   * - An array of resource objects with full attributes and relationships
+   * - An array of resource identifier objects (type and id only)
+   * - An empty array (for empty collections)
+   *
+   * @param data - The array of resources to set
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * // Array of resource objects
+   * builder.data([
+   *   { type: "articles", id: "1", attributes: { title: "First" } },
+   *   { type: "articles", id: "2", attributes: { title: "Second" } }
+   * ]);
+   *
+   * // Array of resource identifiers
+   * builder.data([
+   *   { type: "articles", id: "1" },
+   *   { type: "articles", id: "2" }
+   * ]);
+   *
+   * // Empty collection
+   * builder.data([]);
+   * ```
+   */
+  data(data: JsonApiCollectionDocument["data"]): this {
+    this.doc.data = data;
+    return this;
+  }
+
+  /**
+   * Sets included resources for compound documents.
+   *
+   * Included resources are related resources that were requested via the
+   * `include` query parameter. All included resources MUST be referenced
+   * via a relationship chain from the primary data.
+   *
+   * @param included - Array of resource objects to include
+   * @returns The builder instance for method chaining
+   *
+   * @example
+   * ```ts
+   * builder.included([
+   *   {
+   *     type: "people",
+   *     id: "9",
+   *     attributes: {
+   *       firstName: "Dan",
+   *       lastName: "Gebhardt"
+   *     }
+   *   }
+   * ]);
+   * ```
+   *
+   * @see https://jsonapi.org/format/#document-compound-documents
+   */
+  included(included: JsonApiCollectionDocument["included"]): this {
+    this.doc.included = included;
+    return this;
+  }
 }

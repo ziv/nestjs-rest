@@ -12,7 +12,7 @@ describe("parser", () => {
   describe("empty and basic queries", () => {
     it("should return empty object for empty string", () => {
       const result = parser("");
-      expect(result).toEqual({});
+      expect(result).toEqual({ sort: {}, fields: {} });
     });
 
     it("should handle query string with no JSON:API parameters", () => {
@@ -150,6 +150,48 @@ describe("parser", () => {
         field: "id",
         limit: 15,
       });
+    });
+  });
+
+  describe("page parameter - validation", () => {
+    it("should reject negative offset", () => {
+      const result = parser("page[offset]=-10&page[limit]=10");
+      expect(result.page).toBeUndefined();
+    });
+
+    it("should reject negative limit", () => {
+      const result = parser("page[offset]=0&page[limit]=-5");
+      expect(result.page).toBeUndefined();
+    });
+
+    it("should reject zero limit", () => {
+      const result = parser("page[offset]=0&page[limit]=0");
+      expect(result.page).toBeUndefined();
+    });
+
+    it("should reject limit exceeding MAX_SAFE_INTEGER", () => {
+      const result = parser("page[offset]=0&page[limit]=9999999999999999999");
+      expect(result.page).toBeUndefined();
+    });
+
+    it("should reject offset exceeding MAX_SAFE_INTEGER", () => {
+      const result = parser("page[offset]=9999999999999999999&page[limit]=10");
+      expect(result.page).toBeUndefined();
+    });
+
+    it("should accept valid positive values", () => {
+      const result = parser("page[offset]=100&page[limit]=50");
+      expect(result.page).toEqual({ offset: 100, limit: 50 });
+    });
+
+    it("should reject negative limit for cursor pagination", () => {
+      const result = parser("page[cursor]=abc&page[limit]=-5");
+      expect(result.page).toBeUndefined();
+    });
+
+    it("should reject zero limit for cursor pagination", () => {
+      const result = parser("page[cursor]=abc&page[limit]=0");
+      expect(result.page).toBeUndefined();
     });
   });
 
@@ -535,7 +577,11 @@ describe("parser", () => {
       );
 
       expect(result.sort).toEqual({ createdAt: -1 });
-      expect(result.page).toEqual({ cursor: "eyJpZCI6MTIzfQ", field: "id", limit: 20 });
+      expect(result.page).toEqual({
+        cursor: "eyJpZCI6MTIzfQ",
+        field: "id",
+        limit: 20,
+      });
       expect(result.include).toEqual(["author", "mentions", "media"]);
     });
   });
@@ -591,17 +637,25 @@ describe("serializer", () => {
 
   describe("page parameter - cursor pagination", () => {
     it("should serialize cursor and limit", () => {
-      const result = serializer({ page: { cursor: "eyJpZCI6MTAwfQ==", field: "id", limit: 20 } });
-      expect(result).toBe("page%5Bcursor%5D=eyJpZCI6MTAwfQ%3D%3D&page%5Blimit%5D=20");
+      const result = serializer({
+        page: { cursor: "eyJpZCI6MTAwfQ==", field: "id", limit: 20 },
+      });
+      expect(result).toBe(
+        "page%5Bcursor%5D=eyJpZCI6MTAwfQ%3D%3D&page%5Blimit%5D=20",
+      );
     });
 
     it("should include field when not default", () => {
-      const result = serializer({ page: { cursor: "abc123", field: "createdAt", limit: 10 } });
+      const result = serializer({
+        page: { cursor: "abc123", field: "createdAt", limit: 10 },
+      });
       expect(result).toContain("page%5Bfield%5D=createdAt");
     });
 
     it("should omit field when it is default (id)", () => {
-      const result = serializer({ page: { cursor: "abc123", field: "id", limit: 10 } });
+      const result = serializer({
+        page: { cursor: "abc123", field: "id", limit: 10 },
+      });
       expect(result).not.toContain("field");
     });
   });
@@ -613,7 +667,9 @@ describe("serializer", () => {
     });
 
     it("should serialize multiple filter fields", () => {
-      const result = serializer({ filter: { status: "published", author: "john" } });
+      const result = serializer({
+        filter: { status: "published", author: "john" },
+      });
       expect(result).toContain("filter%5Bstatus%5D=published");
       expect(result).toContain("filter%5Bauthor%5D=john");
     });
@@ -720,7 +776,9 @@ describe("serializer", () => {
     });
 
     it("should round-trip cursor pagination", () => {
-      const original: JsonApiQuery = { page: { cursor: "eyJpZCI6MTAwfQ==", field: "id", limit: 20 } };
+      const original: JsonApiQuery = {
+        page: { cursor: "eyJpZCI6MTAwfQ==", field: "id", limit: 20 },
+      };
       const serialized = serializer(original);
       const parsed = parser(serialized);
 
@@ -754,7 +812,9 @@ describe("serializer", () => {
     });
 
     it("should round-trip include parameter", () => {
-      const original: JsonApiQuery = { include: ["author", "comments.author", "tags"] };
+      const original: JsonApiQuery = {
+        include: ["author", "comments.author", "tags"],
+      };
       const serialized = serializer(original);
       const parsed = parser(serialized);
 

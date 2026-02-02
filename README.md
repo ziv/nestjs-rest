@@ -10,16 +10,16 @@ A [`JSON:API`](https://jsonapi.org/) compliant REST controller for
 # Overview
 
 This project bring the `JSON:API` specification to the `NestJS` framework,
-providing zero code REST controller that supports CRUD operations,
-sorting, pagination, filtering, and more using simple configurations.
+providing zero code REST controller that supports CRUD operations, sorting,
+pagination, filtering, and more using simple configurations.
 
 ## Contents
 
 | Package Name                                            | Version                                                          | Description                                                                                |
-|---------------------------------------------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| ------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | [`std-json-api`](./packages/std-json-api)               | ![NPM Version](https://img.shields.io/npm/v/std-json-api)        | Standard `JSON:API` implementation, providing the core functionality of document structure |
-| [`nestjs-rest`](./packages/nestjs-rest)                 | ![NPM Version](https://img.shields.io/npm/v/nestjs-rest)         | NestJS controller that implements the `JSON:API`                                           |                     
-| [`nestjs-rest-mongodb`](./packages/nestjs-rest-mongodb) | ![NPM Version](https://img.shields.io/npm/v/nestjs-rest-mongodb) | MongoDB adapter for `nestjs-rest`                                                          |                     
+| [`nestjs-rest`](./packages/nestjs-rest)                 | ![NPM Version](https://img.shields.io/npm/v/nestjs-rest)         | NestJS controller that implements the `JSON:API`                                           |
+| [`nestjs-rest-mongodb`](./packages/nestjs-rest-mongodb) | ![NPM Version](https://img.shields.io/npm/v/nestjs-rest-mongodb) | MongoDB adapter for `nestjs-rest`                                                          |
 
 ## Specification
 
@@ -29,7 +29,7 @@ format([reference](./packages/std-json-api/specs.md)).
 ### Implementation Report
 
 | Spec                | Subject    | Status | Reference                                          |
-|---------------------|------------|--------|----------------------------------------------------|
+| ------------------- | ---------- | ------ | -------------------------------------------------- |
 | content-negotiation |            | 🚧     | https://jsonapi.org/format/#content-negotiation    |
 | document structure  |            | ✈️     | https://jsonapi.org/format/#document-structure     |
 | fetching data       |            | ✈️     | https://jsonapi.org/format/#fetching               |
@@ -47,14 +47,14 @@ format([reference](./packages/std-json-api/specs.md)).
 There are two pagination strategies supported by this project:
 
 | Pagination Strategy     | Status | Description                                                                                          |
-|-------------------------|--------|------------------------------------------------------------------------------------------------------|
+| ----------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
 | Offset-based pagination | ✈️     | Default pagination strategy using offset and limit query parameters.                                 |
 | Cursor-based pagination | ✈️     | Pagination strategy using cursor to provide a more efficient way to paginate through large datasets. |
 
 ### Adapters Implementation Report
 
 | Adapter | Status | Description                                                    | Readme                                             |
-|---------|--------|----------------------------------------------------------------|----------------------------------------------------|
+| ------- | ------ | -------------------------------------------------------------- | -------------------------------------------------- |
 | Mongodb | ✈️     | Simple (without relationships) adapter for Mongodb collection. | [readme](./packages/nestjs-rest-mongodb/readme.md) |
 
 ---
