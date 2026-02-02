@@ -645,12 +645,12 @@ export interface JsonApiDocumentBase {
   /**
    * An object describing the server's JSON:API implementation.
    */
-  jsonapi?: JsonApiObject;
+  jsonapi: JsonApiObject;
 
   /**
    * Links related to the primary data.
    */
-  links?: DocumentLinks;
+  links: DocumentLinks;
 
   /**
    * Non-standard meta-information about the document.

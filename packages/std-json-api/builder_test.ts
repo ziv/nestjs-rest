@@ -23,6 +23,7 @@ describe("JsonApiBaseBuilder", () => {
       jsonapi: {
         version: "1.0",
       },
+      links: {},
     });
   });
 
@@ -429,9 +430,7 @@ describe("JsonApiResourceBuilder", () => {
         .attributes({ title: "Test Article" })
         .build();
 
-      const doc = new JsonApiDocumentBuilder()
-        .data(resource)
-        .build();
+      const doc = new JsonApiDocumentBuilder(resource).build();
 
       expect(doc.data).toEqual(resource);
     });
@@ -445,8 +444,7 @@ describe("JsonApiResourceBuilder", () => {
         .attributes({ title: "Second" })
         .build();
 
-      const doc = new JsonApiCollectionDocumentBuilder()
-        .data([resource1, resource2])
+      const doc = new JsonApiCollectionDocumentBuilder([resource1, resource2])
         .build();
 
       expect(doc.data).toHaveLength(2);
@@ -592,7 +590,6 @@ describe("JsonApiResourceBuilder", () => {
 describe("JsonApiDocumentBuilder", () => {
   describe("data", () => {
     it("should set a resource object as primary data", () => {
-      const builder = new JsonApiDocumentBuilder();
       const resource: ResourceObject = {
         type: "articles",
         id: "1",
@@ -602,32 +599,29 @@ describe("JsonApiDocumentBuilder", () => {
         },
       };
 
-      const doc = builder.data(resource).build();
+      const doc = new JsonApiDocumentBuilder(resource).build();
 
       expect(doc.data).toEqual(resource);
     });
 
     it("should set a resource identifier as primary data", () => {
-      const builder = new JsonApiDocumentBuilder();
       const identifier: ResourceIdentifierObject = {
         type: "articles",
         id: "1",
       };
 
-      const doc = builder.data(identifier).build();
+      const doc = new JsonApiDocumentBuilder(identifier).build();
 
       expect(doc.data).toEqual(identifier);
     });
 
     it("should set null as primary data", () => {
-      const builder = new JsonApiDocumentBuilder();
-      const doc = builder.data(null).build();
+      const doc = new JsonApiDocumentBuilder(null).build();
 
       expect(doc.data).toBeNull();
     });
 
     it("should handle resource with relationships", () => {
-      const builder = new JsonApiDocumentBuilder();
       const resource: ResourceObject = {
         type: "articles",
         id: "1",
@@ -645,13 +639,12 @@ describe("JsonApiDocumentBuilder", () => {
         },
       };
 
-      const doc = builder.data(resource).build();
+      const doc = new JsonApiDocumentBuilder(resource).build();
 
       expect(doc.data).toEqual(resource);
     });
 
     it("should handle resource with links", () => {
-      const builder = new JsonApiDocumentBuilder();
       const resource: ResourceObject = {
         type: "articles",
         id: "1",
@@ -661,13 +654,12 @@ describe("JsonApiDocumentBuilder", () => {
         },
       };
 
-      const doc = builder.data(resource).build();
+      const doc = new JsonApiDocumentBuilder(resource).build();
 
       expect(doc.data).toEqual(resource);
     });
 
     it("should handle resource with meta", () => {
-      const builder = new JsonApiDocumentBuilder();
       const resource: ResourceObject = {
         type: "articles",
         id: "1",
@@ -678,20 +670,19 @@ describe("JsonApiDocumentBuilder", () => {
         },
       };
 
-      const doc = builder.data(resource).build();
+      const doc = new JsonApiDocumentBuilder(resource).build();
 
       expect(doc.data).toEqual(resource);
     });
 
     it("should handle resource with lid for new resources", () => {
-      const builder = new JsonApiDocumentBuilder();
       const resource: ResourceObject = {
         type: "articles",
         lid: "temp-1",
         attributes: { title: "New Article" },
       };
 
-      const doc = builder.data(resource).build();
+      const doc = new JsonApiDocumentBuilder(resource).build();
 
       expect(doc.data).toEqual(resource);
     });
@@ -699,7 +690,6 @@ describe("JsonApiDocumentBuilder", () => {
 
   describe("included", () => {
     it("should set included resources", () => {
-      const builder = new JsonApiDocumentBuilder();
       const included: ResourceObject[] = [
         {
           type: "people",
@@ -719,14 +709,17 @@ describe("JsonApiDocumentBuilder", () => {
         },
       ];
 
-      const doc = builder.included(included).build();
+      const doc = new JsonApiDocumentBuilder({ type: "articles", id: "1" })
+        .included(included)
+        .build();
 
       expect(doc.included).toEqual(included);
     });
 
     it("should set empty included array", () => {
-      const builder = new JsonApiDocumentBuilder();
-      const doc = builder.included([]).build();
+      const doc = new JsonApiDocumentBuilder({ type: "articles", id: "1" })
+        .included([])
+        .build();
 
       expect(doc.included).toEqual([]);
     });
@@ -734,20 +727,18 @@ describe("JsonApiDocumentBuilder", () => {
 
   describe("complete document", () => {
     it("should build a complete single resource document", () => {
-      const builder = new JsonApiDocumentBuilder();
-      const doc = builder
-        .data({
-          type: "articles",
-          id: "1",
-          attributes: {
-            title: "JSON:API paints my bikeshed!",
+      const doc = new JsonApiDocumentBuilder({
+        type: "articles",
+        id: "1",
+        attributes: {
+          title: "JSON:API paints my bikeshed!",
+        },
+        relationships: {
+          author: {
+            data: { type: "people", id: "9" },
           },
-          relationships: {
-            author: {
-              data: { type: "people", id: "9" },
-            },
-          },
-        })
+        },
+      })
         .included([
           {
             type: "people",
@@ -771,26 +762,24 @@ describe("JsonApiDocumentBuilder", () => {
     });
 
     it("should build a document with only data", () => {
-      const builder = new JsonApiDocumentBuilder();
-      const doc = builder
-        .data({
-          type: "articles",
-          id: "1",
-          attributes: { title: "Minimal" },
-        })
-        .build();
+      const doc = new JsonApiDocumentBuilder({
+        type: "articles",
+        id: "1",
+        attributes: { title: "Minimal" },
+      }).build();
 
       expect(doc.data).toBeDefined();
       expect(doc.included).toBeUndefined();
-      expect(doc.links).toBeUndefined();
-      expect(doc.meta).toBeUndefined();
     });
   });
 
   describe("method chaining", () => {
     it("should support chaining all methods", () => {
-      const result = new JsonApiDocumentBuilder()
-        .data({ type: "articles", id: "1", attributes: { title: "Test" } })
+      const result = new JsonApiDocumentBuilder({
+        type: "articles",
+        id: "1",
+        attributes: { title: "Test" },
+      })
         .included([{ type: "people", id: "1", attributes: { name: "John" } }])
         .links({ self: "/articles/1" })
         .metadata({ total: 1 });
@@ -803,7 +792,6 @@ describe("JsonApiDocumentBuilder", () => {
 describe("JsonApiCollectionDocumentBuilder", () => {
   describe("data", () => {
     it("should set an array of resource objects as primary data", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
       const resources: ResourceObject[] = [
         {
           type: "articles",
@@ -817,7 +805,7 @@ describe("JsonApiCollectionDocumentBuilder", () => {
         },
       ];
 
-      const doc = builder.data(resources).build();
+      const doc = new JsonApiCollectionDocumentBuilder(resources).build();
 
       expect(doc.data).toEqual(resources);
       expect(Array.isArray(doc.data)).toBe(true);
@@ -825,14 +813,13 @@ describe("JsonApiCollectionDocumentBuilder", () => {
     });
 
     it("should set an array of resource identifiers as primary data", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
       const identifiers: ResourceIdentifierObject[] = [
         { type: "articles", id: "1" },
         { type: "articles", id: "2" },
         { type: "articles", id: "3" },
       ];
 
-      const doc = builder.data(identifiers).build();
+      const doc = new JsonApiCollectionDocumentBuilder(identifiers).build();
 
       expect(doc.data).toEqual(identifiers);
       expect(Array.isArray(doc.data)).toBe(true);
@@ -840,8 +827,7 @@ describe("JsonApiCollectionDocumentBuilder", () => {
     });
 
     it("should set an empty array as primary data", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
-      const doc = builder.data([]).build();
+      const doc = new JsonApiCollectionDocumentBuilder([]).build();
 
       expect(doc.data).toEqual([]);
       expect(Array.isArray(doc.data)).toBe(true);
@@ -849,7 +835,6 @@ describe("JsonApiCollectionDocumentBuilder", () => {
     });
 
     it("should handle resources with relationships", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
       const resources: ResourceObject[] = [
         {
           type: "articles",
@@ -869,13 +854,12 @@ describe("JsonApiCollectionDocumentBuilder", () => {
         },
       ];
 
-      const doc = builder.data(resources).build();
+      const doc = new JsonApiCollectionDocumentBuilder(resources).build();
 
       expect(doc.data).toEqual(resources);
     });
 
     it("should handle resources with links and meta", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
       const resources: ResourceObject[] = [
         {
           type: "articles",
@@ -893,7 +877,7 @@ describe("JsonApiCollectionDocumentBuilder", () => {
         },
       ];
 
-      const doc = builder.data(resources).build();
+      const doc = new JsonApiCollectionDocumentBuilder(resources).build();
 
       expect(doc.data).toEqual(resources);
     });
@@ -901,7 +885,6 @@ describe("JsonApiCollectionDocumentBuilder", () => {
 
   describe("included", () => {
     it("should set included resources", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
       const included: ResourceObject[] = [
         {
           type: "people",
@@ -915,15 +898,18 @@ describe("JsonApiCollectionDocumentBuilder", () => {
         },
       ];
 
-      const doc = builder.included(included).build();
+      const doc = new JsonApiCollectionDocumentBuilder([])
+        .included(included)
+        .build();
 
       expect(doc.included).toEqual(included);
       expect(doc.included).toHaveLength(2);
     });
 
     it("should set empty included array", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
-      const doc = builder.included([]).build();
+      const doc = new JsonApiCollectionDocumentBuilder([])
+        .included([])
+        .build();
 
       expect(doc.included).toEqual([]);
     });
@@ -931,14 +917,12 @@ describe("JsonApiCollectionDocumentBuilder", () => {
 
   describe("complete document", () => {
     it("should build a complete collection document with pagination", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
-      const doc = builder
-        .data([
-          {
-            type: "articles",
-            id: "1",
-            attributes: { title: "First Article" },
-          },
+      const doc = new JsonApiCollectionDocumentBuilder([
+        {
+          type: "articles",
+          id: "1",
+          attributes: { title: "First Article" },
+        },
           {
             type: "articles",
             id: "2",
@@ -969,20 +953,18 @@ describe("JsonApiCollectionDocumentBuilder", () => {
     });
 
     it("should build a compound document with included resources", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
-      const doc = builder
-        .data([
-          {
-            type: "articles",
-            id: "1",
-            attributes: { title: "JSON:API" },
-            relationships: {
-              author: {
-                data: { type: "people", id: "9" },
-              },
+      const doc = new JsonApiCollectionDocumentBuilder([
+        {
+          type: "articles",
+          id: "1",
+          attributes: { title: "JSON:API" },
+          relationships: {
+            author: {
+              data: { type: "people", id: "9" },
             },
           },
-        ])
+        },
+      ])
         .included([
           {
             type: "people",
@@ -1001,24 +983,16 @@ describe("JsonApiCollectionDocumentBuilder", () => {
     });
 
     it("should build a minimal collection document", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
-      const doc = builder
-        .data([
-          { type: "articles", id: "1", attributes: { title: "Test" } },
-        ])
-        .build();
+      const doc = new JsonApiCollectionDocumentBuilder([
+        { type: "articles", id: "1", attributes: { title: "Test" } },
+      ]).build();
 
       expect(doc.data).toHaveLength(1);
       expect(doc.included).toBeUndefined();
-      expect(doc.links).toBeUndefined();
-      expect(doc.meta).toBeUndefined();
-      expect(doc.jsonapi?.version).toBe("1.0");
     });
 
     it("should build an empty collection document", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
-      const doc = builder
-        .data([])
+      const doc = new JsonApiCollectionDocumentBuilder([])
         .links({ self: "/articles" })
         .metadata({ total: 0 })
         .build();
@@ -1031,39 +1005,26 @@ describe("JsonApiCollectionDocumentBuilder", () => {
 
   describe("method chaining", () => {
     it("should support chaining all methods", () => {
-      const result = new JsonApiCollectionDocumentBuilder()
-        .data([{ type: "articles", id: "1", attributes: { title: "Test" } }])
+      const result = new JsonApiCollectionDocumentBuilder([
+        { type: "articles", id: "1", attributes: { title: "Test" } },
+      ])
         .included([{ type: "people", id: "1", attributes: { name: "John" } }])
         .links({ self: "/articles" })
         .metadata({ total: 1 });
 
       expect(result).toBeInstanceOf(JsonApiCollectionDocumentBuilder);
     });
-
-    it("should allow building without setting data", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
-      const doc = builder
-        .links({ self: "/articles" })
-        .metadata({ info: "No data yet" })
-        .build();
-
-      expect(doc.data).toBeUndefined();
-      expect(doc.links).toBeDefined();
-      expect(doc.meta).toBeDefined();
-    });
   });
 
   describe("real-world scenarios", () => {
     it("should build a paginated blog posts response", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
-      const doc = builder
-        .data([
-          {
-            type: "posts",
-            id: "1",
-            attributes: {
-              title: "Getting Started with JSON:API",
-              publishedAt: "2024-01-15T10:00:00Z",
+      const doc = new JsonApiCollectionDocumentBuilder([
+        {
+          type: "posts",
+          id: "1",
+          attributes: {
+            title: "Getting Started with JSON:API",
+            publishedAt: "2024-01-15T10:00:00Z",
             },
             relationships: {
               author: {
@@ -1117,28 +1078,26 @@ describe("JsonApiCollectionDocumentBuilder", () => {
     });
 
     it("should build a filtered and sorted collection", () => {
-      const builder = new JsonApiCollectionDocumentBuilder();
-      const doc = builder
-        .data([
-          {
-            type: "products",
-            id: "100",
-            attributes: {
-              name: "Premium Widget",
-              price: 99.99,
-              inStock: true,
-            },
+      const doc = new JsonApiCollectionDocumentBuilder([
+        {
+          type: "products",
+          id: "100",
+          attributes: {
+            name: "Premium Widget",
+            price: 99.99,
+            inStock: true,
           },
-          {
-            type: "products",
-            id: "101",
-            attributes: {
-              name: "Deluxe Widget",
-              price: 149.99,
-              inStock: true,
-            },
+        },
+        {
+          type: "products",
+          id: "101",
+          attributes: {
+            name: "Deluxe Widget",
+            price: 149.99,
+            inStock: true,
           },
-        ])
+        },
+      ])
         .links({
           self: "/products?filter[inStock]=true&sort=-price",
         })
@@ -1169,7 +1128,7 @@ describe("JsonApiErrorDocumentBuilder", () => {
         },
       ];
 
-      const doc = new JsonApiErrorDocumentBuilder().errors(errors).build();
+      const doc = new JsonApiErrorDocumentBuilder(errors[0]).errors(errors).build();
 
       expect(doc.errors).toEqual(errors);
       expect(doc.jsonapi).toEqual({ version: "1.0" });
@@ -1191,7 +1150,9 @@ describe("JsonApiErrorDocumentBuilder", () => {
         },
       ];
 
-      const doc = new JsonApiErrorDocumentBuilder().errors(errors).build();
+      const doc = new JsonApiErrorDocumentBuilder(errors[0])
+        .errors(errors)
+        .build();
 
       expect(doc.errors).toHaveLength(2);
       expect(doc.errors[0].detail).toBe("Title is required");
@@ -1199,8 +1160,7 @@ describe("JsonApiErrorDocumentBuilder", () => {
     });
 
     it("should replace existing errors", () => {
-      const doc = new JsonApiErrorDocumentBuilder()
-        .errors([{ status: "400", title: "Bad Request" }])
+      const doc = new JsonApiErrorDocumentBuilder({ status: "400", title: "Bad Request" })
         .errors([{ status: "500", title: "Server Error" }])
         .build();
 
@@ -1211,25 +1171,22 @@ describe("JsonApiErrorDocumentBuilder", () => {
 
   describe("error", () => {
     it("should add a single error", () => {
-      const doc = new JsonApiErrorDocumentBuilder()
-        .error({
-          status: "404",
-          title: "Not Found",
-          detail: "Article with id '123' does not exist",
-        })
-        .build();
+      const doc = new JsonApiErrorDocumentBuilder({
+        status: "404",
+        title: "Not Found",
+        detail: "Article with id '123' does not exist",
+      }).build();
 
       expect(doc.errors).toHaveLength(1);
       expect(doc.errors[0].status).toBe("404");
     });
 
     it("should append errors when called multiple times", () => {
-      const doc = new JsonApiErrorDocumentBuilder()
-        .error({
-          status: "400",
-          title: "Bad Request",
-          detail: "Invalid JSON",
-        })
+      const doc = new JsonApiErrorDocumentBuilder({
+        status: "400",
+        title: "Bad Request",
+        detail: "Invalid JSON",
+      })
         .error({
           status: "400",
           title: "Bad Request",
@@ -1243,9 +1200,11 @@ describe("JsonApiErrorDocumentBuilder", () => {
     });
 
     it("should work with errors() method", () => {
-      const doc = new JsonApiErrorDocumentBuilder()
-        .errors([{ status: "422", title: "Validation Error" }])
-        .error({ status: "422", title: "Another Error" })
+      const doc = new JsonApiErrorDocumentBuilder({ status: "422", title: "Validation Error" })
+        .errors([
+          { status: "422", title: "Validation Error" },
+          { status: "422", title: "Another Error" },
+        ])
         .build();
 
       expect(doc.errors).toHaveLength(2);
@@ -1254,8 +1213,7 @@ describe("JsonApiErrorDocumentBuilder", () => {
 
   describe("with metadata and links", () => {
     it("should support metadata", () => {
-      const doc = new JsonApiErrorDocumentBuilder()
-        .error({ status: "500", title: "Server Error" })
+      const doc = new JsonApiErrorDocumentBuilder({ status: "500", title: "Server Error" })
         .metadata({ requestId: "abc-123", timestamp: "2024-01-15T10:00:00Z" })
         .build();
 
@@ -1266,14 +1224,13 @@ describe("JsonApiErrorDocumentBuilder", () => {
     });
 
     it("should support links", () => {
-      const doc = new JsonApiErrorDocumentBuilder()
-        .error({
-          status: "401",
-          title: "Unauthorized",
-          links: {
-            about: "https://api.example.com/docs/errors/401",
-          },
-        })
+      const doc = new JsonApiErrorDocumentBuilder({
+        status: "401",
+        title: "Unauthorized",
+        links: {
+          about: "https://api.example.com/docs/errors/401",
+        },
+      })
         .links({ self: "/articles/1" })
         .build();
 
@@ -1283,25 +1240,22 @@ describe("JsonApiErrorDocumentBuilder", () => {
 
   describe("real-world examples", () => {
     it("should build validation error document", () => {
-      const doc = new JsonApiErrorDocumentBuilder()
-        .errors([
-          {
-            id: "err-001",
-            status: "422",
-            code: "VALIDATION_ERROR",
-            title: "Invalid Attribute",
-            detail: "Title must be between 3 and 100 characters",
-            source: { pointer: "/data/attributes/title" },
-          },
-          {
-            id: "err-002",
-            status: "422",
-            code: "VALIDATION_ERROR",
-            title: "Invalid Attribute",
-            detail: "Email format is invalid",
-            source: { pointer: "/data/attributes/email" },
-          },
-        ])
+      const doc = new JsonApiErrorDocumentBuilder({
+        id: "err-001",
+        status: "422",
+        code: "VALIDATION_ERROR",
+        title: "Invalid Attribute",
+        detail: "Title must be between 3 and 100 characters",
+        source: { pointer: "/data/attributes/title" },
+      })
+        .error({
+          id: "err-002",
+          status: "422",
+          code: "VALIDATION_ERROR",
+          title: "Invalid Attribute",
+          detail: "Email format is invalid",
+          source: { pointer: "/data/attributes/email" },
+        })
         .metadata({ errorCount: 2 })
         .build();
 
@@ -1310,50 +1264,44 @@ describe("JsonApiErrorDocumentBuilder", () => {
     });
 
     it("should build not found error document", () => {
-      const doc = new JsonApiErrorDocumentBuilder()
-        .error({
-          status: "404",
-          code: "RESOURCE_NOT_FOUND",
-          title: "Resource Not Found",
-          detail: "The requested article could not be found",
-          links: {
-            about: "https://api.example.com/docs/errors#not-found",
-          },
-        })
-        .build();
+      const doc = new JsonApiErrorDocumentBuilder({
+        status: "404",
+        code: "RESOURCE_NOT_FOUND",
+        title: "Resource Not Found",
+        detail: "The requested article could not be found",
+        links: {
+          about: "https://api.example.com/docs/errors#not-found",
+        },
+      }).build();
 
       expect(doc.errors[0].status).toBe("404");
       expect(doc.errors[0].code).toBe("RESOURCE_NOT_FOUND");
     });
 
     it("should build authorization error document", () => {
-      const doc = new JsonApiErrorDocumentBuilder()
-        .error({
-          status: "403",
-          code: "FORBIDDEN",
-          title: "Forbidden",
-          detail: "You do not have permission to access this resource",
-          meta: {
-            requiredRole: "admin",
-            currentRole: "user",
-          },
-        })
-        .build();
+      const doc = new JsonApiErrorDocumentBuilder({
+        status: "403",
+        code: "FORBIDDEN",
+        title: "Forbidden",
+        detail: "You do not have permission to access this resource",
+        meta: {
+          requiredRole: "admin",
+          currentRole: "user",
+        },
+      }).build();
 
       expect(doc.errors[0].status).toBe("403");
       expect(doc.errors[0].meta?.requiredRole).toBe("admin");
     });
 
     it("should build query parameter error document", () => {
-      const doc = new JsonApiErrorDocumentBuilder()
-        .error({
-          status: "400",
-          code: "INVALID_QUERY_PARAMETER",
-          title: "Invalid Query Parameter",
-          detail: "The 'page[limit]' parameter must be a positive integer",
-          source: { parameter: "page[limit]" },
-        })
-        .build();
+      const doc = new JsonApiErrorDocumentBuilder({
+        status: "400",
+        code: "INVALID_QUERY_PARAMETER",
+        title: "Invalid Query Parameter",
+        detail: "The 'page[limit]' parameter must be a positive integer",
+        source: { parameter: "page[limit]" },
+      }).build();
 
       expect(doc.errors[0].source?.parameter).toBe("page[limit]");
     });
