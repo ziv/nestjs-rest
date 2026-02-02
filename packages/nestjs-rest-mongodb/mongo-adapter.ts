@@ -1,22 +1,19 @@
-import {debuglog} from 'node:util';
-import type {MatchKeysAndValues, OptionalUnlessRequiredId,} from "mongodb";
-import {
-    CreateResponse,
-    JsonApiAdapter,
-    JsonApiQuery,
-    MultipleResponse,
-    RemoveResponse,
-    SingleResponse,
-    UpdateResponse
+import { debuglog } from "node:util";
+import type {
+  EstimatedDocumentCountOptions,
+  Filter,
+  MatchKeysAndValues,
+  OptionalUnlessRequiredId,
+} from "mongodb";
+import type {
+  JsonApiQuery,
+  JsonApiQueryFields,
+  JsonApiQueryFilter,
 } from "std-json-api";
-import {Doc, InputId, MongodbAdapterOptions, normalize} from "./options";
+import type { JsonApiAdapter } from "nestjs-rest";
+import { Doc, InputId, MongodbAdapterOptions, normalize } from "./options";
 
 const log = debuglog("nestjs-rest-mongodb");
-
-
-function flattenInputId(id: InputId): string {
-    return Array.isArray(id) ? id.join("/") : id;
-}
 
 /**
  * MongoDB adapter implementing the JsonApiAdapter interface.
@@ -25,111 +22,93 @@ function flattenInputId(id: InputId): string {
  * Remember to index your collections based on the fields you query frequently for optimal performance.
  */
 export class MongoAdapter<T extends Doc> implements JsonApiAdapter<T> {
-    private readonly options: MongodbAdapterOptions<T>;
+  private readonly options: MongodbAdapterOptions<T>;
 
-    constructor(options: Partial<MongodbAdapterOptions<T>>) {
-        this.options = normalize(options);
-        log("MongoAdapter initialized with options: %O", this.options);
-    }
+  constructor(options: Partial<MongodbAdapterOptions<T>>) {
+    this.options = normalize(options);
+    log("MongoAdapter initialized with options: %O", this.options);
+  }
 
-    /**
-     * Fetch multiple records based on the provided query.
-     * @param query
-     */
-    async multiple(query: JsonApiQuery): Promise<MultipleResponse<T>> {
-        const pipeline = this.options.pipeline(this.options, query);
-        log("Executing aggregation pipeline: %O", pipeline);
+  /**
+   * Count the total number of records matching the query.
+   * @param query
+   */
+  async count(query: JsonApiQuery): Promise<number> {
+    return await this.options.collection.estimatedDocumentCount(
+      query.filter as EstimatedDocumentCountOptions,
+    );
+  }
 
-        // Execute pipeline and extract results
-        const results = await this.options.collection.aggregate(pipeline).toArray();
-        const [{docs, total}] = results as [{ docs: T[], total: number }];
-        log("Aggregation results - total: %d, docs count: %d", total, docs.length);
+  /**
+   * Fetch multiple records based on the provided query.
+   * @param query
+   */
+  async multiple(query: JsonApiQuery): Promise<T[]> {
+    const filter = this.options.filterFactory(
+      query.filter as JsonApiQueryFilter,
+    ) as Filter<T>;
+    const sort = query.sort ?? { _id: 1 } as Record<string, 1 | -1>;
+    const limit = query.page && query.page.limit
+      ? query.page.limit
+      : this.options.defaultPageSize;
+    const offset = query.page && "offset" in query.page ? query.page.offset : 0;
 
-        // for any other usage then working with mongo object id, convert _id to string
-        const data = (docs || []).map(d => ({...d, _id: String(d._id)}));
+    return await this.options
+      .collection
+      .find(filter)
+      .sort(sort)
+      .limit(limit)
+      .skip(offset)
+      .toArray() as T[];
+  }
 
-        return {
-            data,
-            meta: {
-                total: total || 0,
-            }
-        }
-    }
+  /**
+   * Fetch a single record by its ID.
+   * @param id
+   * @param fields
+   */
+  async single(
+    id: string,
+    fields?: JsonApiQueryFields["item"],
+  ): Promise<T | null> {
+    return await this.options.collection.findOne(
+      this.options.uniqueFactory(id),
+      fields ? { projection: fields } : undefined,
+    ) as T | null;
+  }
 
-    /**
-     * Fetch a single record by its ID.
-     * @param id
-     * @param query
-     */
-    async single(id: InputId, query: JsonApiQuery): Promise<SingleResponse<T>> {
-        const {resourceId} = this.options.descriptor;
+  /**
+   * Create a new record with the provided data.
+   * @param data
+   */
+  async create<R = T>(data: R): Promise<string> {
+    const { insertedId } = await this.options.collection.insertOne(
+      data as OptionalUnlessRequiredId<T>,
+    );
+    return String(insertedId);
+  }
 
-        // TODO: Implement relationship inclusion (query.include) using $lookup stages
+  /**
+   * Update a record by its ID with the provided data.
+   * @param id
+   * @param data
+   */
+  async update<R = T>(id: InputId, data: Partial<R>): Promise<boolean> {
+    const res = await this.options.collection.updateOne(
+      this.options.uniqueFactory(id),
+      {
+        $set: data as MatchKeysAndValues<never>,
+      },
+    );
+    return res.modifiedCount === 1;
+  }
 
-        // Build projection options from fields parameter
-        const projection = query.fields && query.fields[resourceId]
-            ? query.fields[resourceId]
-            : undefined;
-
-        const doc = await this.options.collection.findOne(
-            this.options.uniqueFactory(id),
-            projection ? {projection} : undefined
-        );
-        return {
-            data: doc as T || null,
-            meta: {
-                id: flattenInputId(id),
-            },
-        };
-    }
-
-    /**
-     * Create a new record with the provided data.
-     * @param data
-     */
-    async create<R = T>(data: R): Promise<CreateResponse> {
-        const {insertedId} = await this.options.collection.insertOne(
-            data as OptionalUnlessRequiredId<T>,
-        );
-        return {
-            meta: {
-                created: true,
-                id: String(insertedId),
-            }
-        }
-    }
-
-    /**
-     * Update a record by its ID with the provided data.
-     * @param id
-     * @param data
-     */
-    async update<R = T>(id: InputId, data: Partial<R>): Promise<UpdateResponse> {
-        const res = await this.options.collection.updateOne(
-            this.options.uniqueFactory(id),
-            {
-                $set: data as MatchKeysAndValues<never>,
-            },
-        );
-        return {
-            meta: {
-                updated: res.modifiedCount === 1,
-                id: flattenInputId(id),
-            },
-        };
-    }
-
-    /**
-     * Delete a record by its ID.
-     * @param id
-     */
-    async remove(id: InputId): Promise<RemoveResponse> {
-        await this.options.collection.deleteOne(this.options.uniqueFactory(id));
-        return {
-            meta: {
-                id: flattenInputId(id),
-                deleted: true,
-            },
-        };
-    }
+  /**
+   * Delete a record by its ID.
+   * @param id
+   */
+  async remove(id: InputId): Promise<boolean> {
+    await this.options.collection.deleteOne(this.options.uniqueFactory(id));
+    return true;
+  }
 }
