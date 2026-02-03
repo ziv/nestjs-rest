@@ -57,11 +57,14 @@ export class MongoAdapter<T extends Doc> implements JsonApiAdapter<T> {
             cursor = cursor.project(project);
         }
 
-        return await cursor
+        const items = await cursor
             .sort(sort)
             .limit(limit)
             .skip(offset)
             .toArray() as T[];
+
+        // convert _id to string for JSON:API compliance
+        return items.map((item) => ({...item, _id: String(item._id)}));
     }
 
     /**
@@ -73,10 +76,14 @@ export class MongoAdapter<T extends Doc> implements JsonApiAdapter<T> {
         id: string,
         fields?: JsonApiQueryFields["item"],
     ): Promise<T | null> {
-        return await this.options.collection.findOne(
+        const item = await this.options.collection.findOne(
             this.options.uniqueFactory(id),
             fields ? {projection: fields} : undefined,
         ) as T | null;
+        if (item) {
+            return {...item, _id: String(item._id)};
+        }
+        return null;
     }
 
     /**
